@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tell Me What To Do</title>
+    <link rel="stylesheet" href="facts.css">
+</head>
+<body>
+    
+    
+    <header class="header">
+        
+        <div class="title-box">
+            <p class="title">[C-M] ■ info bulletin ■</p>
+            <div class="speed-control">
+                <button onclick="setSpeed(20)" class="title speed-btn">[-]</button>
+                <button onclick="setSpeed(8)" class="title speed-btn">[+]</button>
+                <button onclick="setSpeed(4)" class="title speed-btn">[++]</button>
+                <button onclick="setSpeed(2)" class="title speed-btn">[S*]</button>
+            </div>
+            <br>
+            <br>
+            <button onclick="window.location.href='../links/links.html'" class="nav-link">[back]</button>
+        
+        </div>
+        
+        <div class="readout-box">
+            <p class="readout" id="fileReadout"></p>
+        </div>
+        
+    </header>
+    
+    
+    <div id="fact-box">
+        <div class="scroll-container">
+            <div class="scroll-content" id="scroll-content"></div>
+        </div>
+    </div>
+    
+    <style>
+        #fact-box {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+            z-index: 0;
+        }
+        
+        .scroll-container {
+            height: 100%;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .scroll-content {
+            animation: scroll-up 20s linear infinite;
+            position: absolute;
+            left: 3rem;
+            right: 3rem;
+            top: 0;
+            overflow: hidden;
+        }
+        
+        .scroll-content .fact-line {
+            display: inline;
+            margin-bottom: 0;
+        }
+        
+        .scroll-content .fact-line.grey {
+            color: #b8b8b8;
+        }
+        
+        @keyframes scroll-up {
+            from {
+                transform: translateY(0);
+            }
+            to {
+                transform: translateY(-50%);
+            }
+        }
+        
+        .speed-control {
+            display: inline;
+        }
+        
+        .speed-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            margin: 0;
+            cursor: pointer;
+            display: inline;
+        }
+        
+        .speed-btn:hover {
+            opacity: 0.7;
+        }
+    </style>
+    
+    <script>
+        let currentSpeed = 20;
+        
+        fetch('facts.txt')
+        .then(response => response.text())
+        .then(data => {
+            const content = document.getElementById('scroll-content');
+            
+            // Split by periods to get sentences
+            const sentences = data.split('.').filter(s => s.trim()).map(s => s.trim() + '.');
+            
+            // Create enough copies to fill screen multiple times
+            let allSentences = [];
+            for (let i = 0; i < 20; i++) {
+                allSentences = allSentences.concat(sentences);
+            }
+            
+            // Wrap each sentence with alternating colors
+            const wrappedSentences = allSentences.map((sentence, index) => {
+                const colorClass = index % 2 === 1 ? 'grey' : '';
+                return `<span class="fact-line ${colorClass}">${sentence} </span>`;
+            }).join('');
+            
+            // Duplicate for seamless loop
+            content.innerHTML = wrappedSentences + wrappedSentences;
+            content.classList.add('text-facts');
+            
+            // Start at random position
+            const randomDelay = Math.random() * -currentSpeed;
+            content.style.animationDelay = `${randomDelay}s`;
+        })
+        .catch(error => console.error("error fetching facts:", error));
+        
+        function setSpeed(speed) {
+            currentSpeed = speed;
+            const scrollContent = document.getElementById('scroll-content');
+            scrollContent.style.animationDuration = speed + 's';
+        }
+    </script>
+    
+</body>
+</html>

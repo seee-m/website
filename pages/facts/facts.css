@@ -1,0 +1,115 @@
+@font-face {
+    font-family: 'CommitMono';
+    src: url('../../fonts/CommitMono-700-Regular.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Geist';
+    src: url('../../fonts/Geist-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'CommitMono', monospace;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    background-color: #c6c6c6;
+}
+
+
+.text-facts {
+    font-family: 'Geist', sans-serif;
+    font-weight: 700;
+    font-size: clamp(2rem, 6vw, 4rem);
+    color: #ff2faa;
+    line-height: 1.1;
+    text-transform: lowercase;
+}
+
+.text-facts .fact-line {
+    word-break: break-all;
+}
+
+/* Header */
+.header {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    z-index: 2;
+}
+
+.title-box {
+    padding: 0.625rem;
+    background: #c6c6c6;
+    border: 1px dashed #ff2faa;
+    text-transform: uppercase;
+}
+
+.title {
+    font-size: 12px;
+    letter-spacing: 0.05rem;
+    color: #ff2faa;
+    margin: 0;
+}
+
+.nav-box {
+    padding: 0.625rem;
+    background: #c6c6c6;
+    text-transform: uppercase;
+    display: flex;
+    max-width: 460px;
+    flex-wrap: wrap;
+    justify-content: left;
+    gap: 10px;
+    align-items: center;
+}
+
+.nav-link {
+    font-family: 'CommitMono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.05rem;
+    color: #ff2faa;
+    text-decoration: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    text-transform: inherit;
+}
+
+.nav-link:hover {
+    opacity: 0.8;
+}
+
+/* Mobile - matching homepage breakpoint */
+@media (max-width: 600px) {
+    .header {
+        left: 1.5rem;
+        right: 1.5rem;
+        width: calc(100vw - 3rem);
+    }
+    
+    .nav-box,
+    .title-box {
+        max-width: 100%;
+    }
+    
+    .title,
+    .nav-link {
+        font-size: 0.75rem;
+    }
+    
+}
