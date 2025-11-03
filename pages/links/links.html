@@ -15,7 +15,12 @@
     
     <header class="header">
         <div class="title-box">
-            <p class="title">[C-M] Connor MacDonald, Applied Artist & Designer</p> 
+            <p class="title"> Connor MacDonald is an applied artist + designer <br> currently working at International Magic Studio.</p>
+            <br>
+            <button onclick="window.location.href='../../index.html'" class="home-link">[home]</button>
+            <a href="https://www.are.na/connor-macdonald-aygwd2z45ek" class="home-link">[★★]</a>
+            <a href="https://www.instagram.com/sensoryworks_" class="home-link">[insta]</a>
+            <a href="https://github.com/seee-m" class="home-link">[github]</a>
         </div>
 
         <div class="readout-box">
@@ -23,14 +28,8 @@
         </div>
         
         <nav class="nav-box">
-            <button onclick="window.location.href='../../index.html'" class="nav-link">[back]</button>
-            <button id="rerollButton" class="nav-link">[reroll]</button>
-
-            <a href="https://www.are.na/connor-macdonald-aygwd2z45ek" class="nav-link" style="color: #7f7f7f;">[★★]</a>
-            <a href="https://www.instagram.com/sensoryworks_" class="nav-link" style="color: #7f7f7f;">[insta]</a>
-            <a href="https://github.com/seee-m" class="nav-link" style="color: #7f7f7f;">[github]</a>
+            <button id="rerollButton" class="nav-link">[randomise]</button>
             <button onclick="window.location.href='../wisdom/wisdom.html'" class="nav-link">[wisdom]</button>
-            <button onclick="window.location.href='../facts/facts.html'" class="nav-link">[facts]</button> 
         </nav>
         
     </header>
@@ -132,7 +131,7 @@
     // Create new style tag with hover color
     const styleTag = document.createElement('style');
     styleTag.id = 'dynamic-hover-style';
-    styleTag.textContent = `.nav-link:hover { color: ${colors.stroke} !important; }`;
+    styleTag.textContent = `.nav-link:hover { color: ${colors.fill} !important; }`;
     document.head.appendChild(styleTag);
 }
 

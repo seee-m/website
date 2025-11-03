@@ -100,6 +100,7 @@ body {
 
 /* Text */
 .title,
+.home-link,
 .nav-link,
 .readout {
     font-family: 'CommitMono', monospace;
@@ -114,6 +115,14 @@ body {
     color: #000108;
 }
 
+.home-link {
+    color: #000108;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+}
+
 .nav-link {
     color: #f3f3f3;
     background: none;
@@ -124,6 +133,10 @@ body {
 
 .nav-link:hover {
     color: var(--hover-color, #ff0000) !important;
+}
+
+.home-link:hover {
+    opacity: 0.5;
 }
 
 .readout {
@@ -145,6 +158,7 @@ body {
     }
     
     .title,
+    .home-link,
     .nav-link,
     .readout {
         font-size: 0.75rem;
