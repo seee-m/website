@@ -22,7 +22,7 @@ body {
     background-color: #000108;
 }
 
-/* Layout Container */
+/* Layout */
 .container {
     position: relative;
     width: 100%;
@@ -57,68 +57,74 @@ body {
     left: 2rem;
     display: flex;
     flex-direction: column;
-    gap: 0;
     z-index: 2;
 }
 
-.title-box {
+/* Boxes - all identical */
+.title-box,
+.nav-box,
+.readout-box {
     padding: 0.625rem;
-    background: #ff0000;
     text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    min-height: 29px;
 }
 
-.title {
-    font-size: 12px;
-    letter-spacing: 0.05rem;
-    color: #f3f3f3;
-    margin: 0;
+.title-box {
+    background: #ff0000;
 }
 
 .nav-box {
-    padding: 0.625rem;
     background: #000108;
-    text-transform: uppercase;
-    display: flex;
-    justify-content: left;
     gap: 10px;
-    align-items: center;
 }
 
-.nav-link {
+.readout-box {
+    background: #f3f3f3;
+}
+
+/* Text - combined common styles */
+.home-link,
+.nav-link,
+.readout {
     font-family: 'CommitMono', monospace;
     font-size: 12px;
     letter-spacing: 0.05rem;
-    color: #f3f3f3;
-    text-decoration: none;
-    background: none;
-    border: none;
-    cursor: pointer;
+    margin: 0;
     padding: 0;
     text-transform: inherit;
 }
 
-.nav-link:hover {
-    opacity: 0.8;
+.home-link,
+.nav-link {
+    color: #f3f3f3;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
 }
 
-.readout-box {
-    padding: 0.625rem;
-    background: #f3f3f3;
-    padding: 0.625rem
+.home-link:hover {
+    color: #000108;
+}
+
+.nav-link:hover {
+    color: #ff0000;
 }
 
 .readout {
-    font-family: 'CommitMono', monospace;
-    text-transform: uppercase;
-    font-size: 12px;
-    letter-spacing: 0.05rem;
     color: #000108;
-    margin: 0;
 }
 
 /* Mobile */
 @media (max-width: 600px) {
-
+    .header {
+        left: 1.5rem;
+        right: 1.5rem;
+        width: calc(100vw - 3rem);
+    }
+    
     .work {
         position: absolute;
         left: 1.5rem;
@@ -128,15 +134,9 @@ body {
         max-height: none;
         object-fit: scale-down;
         object-position: top center;
-        /* top will be set by JavaScript */
-    }
-    .header {
-        left: 1.5rem;
-        right: 1.5rem;
-        width: calc(100vw - 3rem);
     }
     
-    .title,
+    .home-link,
     .nav-link,
     .readout {
         font-size: 0.75rem;

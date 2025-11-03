@@ -116,12 +116,25 @@
         }
 
         function applyColors(colors) {
-            const textElement = document.getElementById('overlayText');
-            const titleBox = document.querySelector('.title-box');
-            textElement.style.color = colors.fill;
-            textElement.style.webkitTextStroke = `0.018em ${colors.stroke}`;
-            titleBox.style.backgroundColor = colors.fill;
-        }
+    const textElement = document.getElementById('overlayText');
+    const titleBox = document.querySelector('.title-box');
+    
+    textElement.style.color = colors.fill;
+    textElement.style.webkitTextStroke = `0.018em ${colors.stroke}`;
+    titleBox.style.backgroundColor = colors.fill;
+    
+    // Remove old hover style if it exists
+    const oldStyle = document.getElementById('dynamic-hover-style');
+    if (oldStyle) {
+        oldStyle.remove();
+    }
+    
+    // Create new style tag with hover color
+    const styleTag = document.createElement('style');
+    styleTag.id = 'dynamic-hover-style';
+    styleTag.textContent = `.nav-link:hover { color: ${colors.stroke} !important; }`;
+    document.head.appendChild(styleTag);
+}
 
         function randomize() {
             if (colorPairs.length > 0) {
