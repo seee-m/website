@@ -60,7 +60,7 @@ body {
     border: 1px solid #00ff99;
     border-top: none;
     display: flex;
-    max-width: 460px;
+
     min-width: 460px;
     justify-content: space-between;
     align-items: center;
@@ -70,7 +70,7 @@ body {
     background: #000;
     border: 1px solid #00ff99;
     border-top: none;
-    max-width: 460px;
+
     min-width: 460px;
     padding: 0;
     overflow: hidden;
@@ -159,11 +159,11 @@ body {
 }
 
 .folder-item::before {
-    content: "📁 ";
+    content: "";
 }
 
 .parent-folder::before {
-    content: "⬆ ";
+    content: " ";
 }
 
 .track-item.audio::before {

@@ -193,7 +193,7 @@
             if (currentPath !== '../../media/music') {
                 const li = document.createElement('li');
                 li.className = 'track-item parent-folder';
-                li.innerHTML = '<span class="track-name">.. (PARENT)</span><span class="track-type">&lt;DIR&gt;</span>';
+                li.innerHTML = '<span class="track-name">&nbsp;[PARENT]</span><span class="track-type">&lt;DIR&gt;</span>';
                 li.onclick = () => navigateUp();
                 trackList.appendChild(li);
             }
