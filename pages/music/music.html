@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Music Player</title>
+    <link rel="stylesheet" href="../../shared.css">
     <link rel="stylesheet" href="music.css">
 </head>
 <body>
     <div class="header">
         <div class="box title-box">
-            <button onclick="window.location.href='../../index.html'" class="home-link">[c-m] audio work</button>
+            <button onclick="window.location.href='../../index.html'" class="home-link">[c-m] fairlight audio interface<br>> selected audio work</button>
             <br><br>
             <button id="playPauseBtn">[PLAY]</button>
             <button id="hideShowBtn">[HIDE BROWSER]</button>
@@ -32,26 +33,7 @@
     <audio id="audioPlayer"></audio>
 
     <script>
-        const manifest = {
-            "folders": [
-                {
-                    "name": "Exports",
-                    "files": [
-                        "Ambient_001.mp3",
-                        "Ambient_002.mp3",
-                        "Downtempo_001.mp3",
-                        "Downtempo_002.mp3",
-                        "Drone_Ambient_Looping.mp3",
-                        "Drone_Percussion.mp3",
-                        "Joyful_001.mp3",
-                        "Joyful_002.mp3",
-                        "Uptempo_001.mp3",
-                        "Uptempo_002.mp3"
-                    ]
-                }
-            ],
-            "files": ["wl_amb.mp3"]
-        };
+        let manifest = null;
 
         let currentPath = 'root';
         let currentFiles = [];
@@ -60,7 +42,7 @@
 
         const audioPlayer = document.getElementById('audioPlayer');
         const trackList = document.getElementById('trackList');
-        const pathDisplay = document.getElementById('pathDisplay')
+        // const pathDisplay = document.getElementById('pathDisplay')
         const nowPlaying = document.getElementById('nowPlaying');
         const playPauseBtn = document.getElementById('playPauseBtn');
         const hideShowBtn = document.getElementById('hideShowBtn');
@@ -80,9 +62,22 @@
             scrollDownArrow.classList.toggle('visible', scrollTop + clientHeight < scrollHeight - 1);
         }
 
+        async function loadManifest() {
+            try {
+                const response = await fetch('music-manifest.json');
+                manifest = await response.json();
+                loadFiles();
+            } catch (error) {
+                console.error('Failed to load manifest:', error);
+                nowPlaying.textContent = 'ERROR LOADING MANIFEST';
+            }
+        }
+
         function loadFiles() {
+            if (!manifest) return;
+
             const items = [];
-            
+
             if (currentPath === 'root') {
                 manifest.folders.forEach(folder => {
                     items.push({ name: folder.name, type: 'folder' });
@@ -98,19 +93,19 @@
                     });
                 }
             }
-            
+
             currentFiles = items;
             renderTracks();
         }
 
         function renderTracks() {
             trackList.innerHTML = '';
-            pathDisplay.textContent = currentPath === 'root' ? '/MUSIC' : `/MUSIC/${currentPath}`.toUpperCase();
-            
+            // pathDisplay.textContent = currentPath === 'root' ? '/MUSIC' : `/MUSIC/${currentPath}`.toUpperCase();
+
             if (currentPath !== 'root') {
                 const li = document.createElement('li');
                 li.className = 'track-item parent-folder';
-                li.innerHTML = '<span class="track-name">&nbsp;[PARENT]</span><span class="track-type">&lt;DIR&gt;</span>';
+                li.innerHTML = '<span class="track-name">[PARENT]</span><span class="track-type">&lt;DIR&gt;</span>';
                 li.onclick = navigateUp;
                 trackList.appendChild(li);
             }
@@ -201,8 +196,7 @@
         };
 
         hideShowBtn.onclick = () => {
-            const isHidden = controlsBox.style.display === 'none';
-            controlsBox.style.display = isHidden ? 'flex' : 'none';
+            const isHidden = playlistBox.style.display === 'none';
             playlistBox.style.display = isHidden ? 'block' : 'none';
             hideShowBtn.textContent = isHidden ? '[HIDE BROWSER]' : '[SHOW BROWSER]';
         };
@@ -250,7 +244,7 @@
             return `${mins}:${secs.toString().padStart(2, '0')}`;
         }
 
-        loadFiles();
+        loadManifest();
     </script>
 </body>
 </html>

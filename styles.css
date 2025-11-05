@@ -1,28 +1,13 @@
-/* Font */
-@font-face {
-    font-family: 'CommitMono';
-    src: url('fonts/CommitMono-700-Regular.otf') format('opentype');
-    font-weight: 700;
-    font-style: normal;
-}
+/* =========================
+   INDEX PAGE STYLES
+   ========================= */
 
-/* Reset */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-/* Base */
+/* Base - Page-specific background */
 body {
-    font-family: 'CommitMono', monospace;
-    overflow: hidden;
-    width: 100vw;
-    height: 100vh;
     background-color: #000108;
 }
 
-/* Layout */
+/* Layout - Index specific */
 .container {
     position: relative;
     width: 100%;
@@ -32,7 +17,7 @@ body {
     justify-content: center;
 }
 
-/* Images */
+/* Images - Index specific */
 .background {
     position: absolute;
     inset: 0;
@@ -50,59 +35,23 @@ body {
     z-index: 1;
 }
 
-/* Header */
-.header {
-    position: absolute;
-    top: 2rem;
-    left: 2rem;
-    display: flex;
-    flex-direction: column;
-    z-index: 2;
-}
-
-/* Boxes - all identical */
-.title-box,
-.nav-box,
-.readout-box {
-    padding: 0.625rem;
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    min-height: 29px;
-}
-
+/* Box Colors - Index theme (red) */
 .title-box {
     background: #ff0000;
 }
 
 .nav-box {
     background: #000108;
-    gap: 10px;
 }
 
 .readout-box {
     background: #f3f3f3;
 }
 
-/* Text - combined common styles */
-.home-link,
-.nav-link,
-.readout {
-    font-family: 'CommitMono', monospace;
-    font-size: 12px;
-    letter-spacing: 0.05rem;
-    margin: 0;
-    padding: 0;
-    text-transform: inherit;
-}
-
+/* Text Colors - Index theme */
 .home-link,
 .nav-link {
     color: #f3f3f3;
-    background: none;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
 }
 
 .home-link:hover {
@@ -117,14 +66,8 @@ body {
     color: #000108;
 }
 
-/* Mobile */
+/* Mobile - Index specific */
 @media (max-width: 600px) {
-    .header {
-        left: 1.5rem;
-        right: 1.5rem;
-        width: calc(100vw - 3rem);
-    }
-    
     .work {
         position: absolute;
         left: 1.5rem;
@@ -134,11 +77,5 @@ body {
         max-height: none;
         object-fit: scale-down;
         object-position: top center;
-    }
-    
-    .home-link,
-    .nav-link,
-    .readout {
-        font-size: 0.75rem;
     }
 }

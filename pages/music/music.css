@@ -1,28 +1,25 @@
-@font-face {
-    font-family: 'CommitMono';
-    src: url('../../fonts/CommitMono-700-Regular.otf') format('opentype');
-    font-weight: 700;
-    font-style: normal;
-}
+/* =========================
+   MUSIC PAGE STYLES
+   ========================= */
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
+/* Base - Music has different layout structure */
 body {
-    font-family: 'CommitMono', monospace;
     background-color: #000;
     color: #00ff99;
     min-height: 100vh;
-    padding: 2rem;
+    padding: 1.5rem;
+    overflow: auto;
 }
 
+/* Header - Override shared positioning */
 .header {
+    position: static;
+    top: auto;
+    left: auto;
     max-width: 460px;
 }
 
+/* Box - Music specific styling */
 .box {
     padding: 0.625rem;
     text-transform: uppercase;
@@ -33,6 +30,8 @@ body {
 .title-box {
     background: #00ff99;
     color: #000;
+    min-width: 460px;
+    max-width: 460px;
 }
 
 .controls-box {
@@ -42,6 +41,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    min-width: 460px;
+    max-width: 460px;
 }
 
 .playlist-box {
@@ -50,14 +51,13 @@ body {
     border-top: none;
     padding: 0;
     position: relative;
+    min-width: 460px;
+    max-width: 460px;
 }
 
+/* Buttons - Music theme */
 button {
-    background: none;
-    border: none;
     color: inherit;
-    cursor: pointer;
-    font-family: 'CommitMono', monospace;
     font-size: 12px;
     letter-spacing: 0.05rem;
     text-transform: uppercase;
@@ -67,6 +67,7 @@ button:hover {
     opacity: 0.5;
 }
 
+/* Playlist specific styles */
 .playlist-scroll {
     overflow-y: auto;
     max-height: 340px;
@@ -115,11 +116,11 @@ button:hover {
     margin-left: 10px;
 }
 
-.audio::before {
+.audio .track-name::before {
     content: "* ";
 }
 
-.parent-folder::before {
+.parent-folder .track-name::before {
     content: "↲ ";
 }
 
@@ -144,16 +145,27 @@ button:hover {
     bottom: 5px;
 }
 
+/* Mobile */
 @media (max-width: 600px) {
     body {
-        padding: 1rem;
+        padding: 1.5rem;
     }
 
     .header {
         max-width: 100%;
     }
 
-    .box {
+    .box,
+    .title-box,
+    .controls-box,
+    .playlist-box {
+        font-size: 0.75rem;
+        min-width: 0;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    button {
         font-size: 0.75rem;
     }
 

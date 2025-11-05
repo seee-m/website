@@ -1,0 +1,131 @@
+/* =========================
+   FONTS
+   ========================= */
+@font-face {
+    font-family: 'CommitMono';
+    src: url('fonts/CommitMono-700-Regular.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Geist';
+    src: url('fonts/Geist-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+}
+
+/* =========================
+   RESET
+   ========================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* =========================
+   BASE
+   ========================= */
+body {
+    font-family: 'CommitMono', monospace;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+}
+
+/* =========================
+   HEADER LAYOUT
+   ========================= */
+.header {
+    position: absolute;
+    top: 1.5rem;
+    left: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    z-index: 2;
+}
+
+/* =========================
+   BOX COMPONENTS - BASE
+   ========================= */
+.title-box,
+.nav-box,
+.readout-box {
+    padding: 0.625rem;
+    text-transform: uppercase;
+    min-width: 460px;
+    max-width: 460px;
+}
+
+.nav-box {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.readout-box {
+    display: flex;
+}
+
+/* =========================
+   TEXT ELEMENTS - BASE
+   ========================= */
+.title,
+.home-link,
+.nav-link,
+.readout {
+    line-height: 1.3;
+    text-align: left;
+    font-family: 'CommitMono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.05rem;
+    margin: 0;
+    padding: 0;
+    text-transform: inherit;
+}
+
+.home-link,
+.nav-link {
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+/* =========================
+   BUTTON RESET
+   ========================= */
+button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'CommitMono', monospace;
+}
+
+/* =========================
+   MOBILE RESPONSIVE
+   ========================= */
+@media (max-width: 600px) {
+    .header {
+        left: 1.5rem;
+        right: 1.5rem;
+        width: calc(100vw - 3rem);
+    }
+
+    .title-box,
+    .nav-box,
+    .readout-box {
+        min-width: 0;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .title,
+    .home-link,
+    .nav-link,
+    .readout {
+        font-size: 0.75rem;
+    }
+}
