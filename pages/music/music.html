@@ -1,71 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
-    
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Music Player</title>
     <link rel="stylesheet" href="music.css">
-    <script src="https://cdn.jsdelivr.net/npm/audiomotion-analyzer@4"></script>
 </head>
-
 <body>
-    <div id="visualizer"></div>
-    
-    <header class="header">
-        <div class="title-box">
-            <p class="title" id="pathDisplay">/MUSIC</p>
-            <br>
-            <button onclick="window.location.href='../links/links.html'" class="back-link">[BACK]</button>
-            <button id="playPauseBtn" class="back-link">[PLAY]</button>
-            <button id="hideShowBtn" class="back-link">[HIDE]</button>
+    <div class="header">
+        <div class="box title-box">
+            <button onclick="window.location.href='../../index.html'" class="home-link">[c-m] audio work</button>
+            <br><br>
+            <button id="playPauseBtn">[PLAY]</button>
+            <button id="hideShowBtn">[HIDE BROWSER]</button>
         </div>
 
-        <div class="controls-box">
-            <p class="now-playing" id="nowPlaying">NO FILE LOADED</p>
-            <p class="time-display" id="timeDisplay">0:00 / 0:00</p>
+        <div class="box controls-box" id="controlsBox">
+            <p id="nowPlaying">NO FILE LOADED</p>
+            <p id="timeDisplay">0:00 / 0:00</p>
         </div>
         
-        <div class="playlist-box">
+        <div class="box playlist-box" id="playlistBox">
             <div class="scroll-arrow scroll-arrow-up" id="scrollUpArrow">▲</div>
             <div class="playlist-scroll" id="playlistScroll">
-                <ul class="track-list" id="trackList">
-                    <!-- Tracks will be loaded here -->
-                </ul>
+                <ul class="track-list" id="trackList"></ul>
             </div>
             <div class="scroll-arrow scroll-arrow-down" id="scrollDownArrow">▼</div>
         </div>
-    </header>
+    </div>
 
     <audio id="audioPlayer"></audio>
 
     <script>
-        // State
-        let currentPath = '../../media/music';
+        const manifest = {
+            "folders": [
+                {
+                    "name": "Exports",
+                    "files": [
+                        "Ambient_001.mp3",
+                        "Ambient_002.mp3",
+                        "Downtempo_001.mp3",
+                        "Downtempo_002.mp3",
+                        "Drone_Ambient_Looping.mp3",
+                        "Drone_Percussion.mp3",
+                        "Joyful_001.mp3",
+                        "Joyful_002.mp3",
+                        "Uptempo_001.mp3",
+                        "Uptempo_002.mp3"
+                    ]
+                }
+            ],
+            "files": ["wl_amb.mp3"]
+        };
+
+        let currentPath = 'root';
         let currentFiles = [];
         let currentTrackIndex = -1;
         let isPlaying = false;
 
-        // Audio visualization
-        let audioMotion;
-        let audioContext;
-
-        // Elements
         const audioPlayer = document.getElementById('audioPlayer');
         const trackList = document.getElementById('trackList');
+        const pathDisplay = document.getElementById('pathDisplay')
         const nowPlaying = document.getElementById('nowPlaying');
         const playPauseBtn = document.getElementById('playPauseBtn');
         const hideShowBtn = document.getElementById('hideShowBtn');
         const timeDisplay = document.getElementById('timeDisplay');
-        const pathDisplay = document.getElementById('pathDisplay');
-        const visualizerContainer = document.getElementById('visualizer');
-        const controlsBox = document.querySelector('.controls-box');
-        const playlistBox = document.querySelector('.playlist-box');
+        const controlsBox = document.getElementById('controlsBox');
+        const playlistBox = document.getElementById('playlistBox');
         const playlistScroll = document.getElementById('playlistScroll');
         const scrollUpArrow = document.getElementById('scrollUpArrow');
         const scrollDownArrow = document.getElementById('scrollDownArrow');
 
-        // Update scroll arrows
         function updateScrollArrows() {
             const scrollTop = playlistScroll.scrollTop;
             const scrollHeight = playlistScroll.scrollHeight;
@@ -75,126 +80,38 @@
             scrollDownArrow.classList.toggle('visible', scrollTop + clientHeight < scrollHeight - 1);
         }
 
-        // Initialize AudioMotion analyzer with Fairlight CMI style
-        function initAudioContext() {
-            if (!audioMotion) {
-                audioMotion = new AudioMotionAnalyzer(visualizerContainer, {
-                    source: audioPlayer,
-                    mode: 10, // Line graph mode - looks like oscilloscope
-                    gradient: 'classic', // Will override with custom
-                    showBgColor: true,
-                    bgAlpha: 1,
-                    overlay: true,
-                    showPeaks: false,
-                    showScaleX: false,
-                    showScaleY: false,
-                    reflexRatio: 0,
-                    fillAlpha: 0,
-                    lineWidth: 1.5,
-                    frequencyScale: 'linear',
-                    smoothing: 0.7,
-                    minFreq: 20,
-                    maxFreq: 16000
+        function loadFiles() {
+            const items = [];
+            
+            if (currentPath === 'root') {
+                manifest.folders.forEach(folder => {
+                    items.push({ name: folder.name, type: 'folder' });
                 });
-                
-                // Create custom Fairlight-style gradient
-                audioMotion.registerGradient('fairlight', {
-                    bgColor: '#000',
-                    colorStops: [
-                        { pos: 0, color: '#00ff99' },
-                        { pos: 1, color: '#00ff99' }
-                    ]
+                manifest.files.forEach(file => {
+                    items.push({ name: file, type: 'audio' });
                 });
-                
-                audioMotion.gradient = 'fairlight';
-                audioContext = audioMotion.audioCtx;
-            }
-        }
-
-        // Initialize
-        async function init() {
-            await loadFiles();
-            setupEventListeners();
-        }
-
-        async function loadFiles() {
-            try {
-                console.log('Loading from:', currentPath);
-                
-                // Load the manifest
-                const response = await fetch('music-manifest.json');
-                const manifest = await response.json();
-                
-                const items = [];
-                
-                // Determine which level we're at
-                if (currentPath === '../../media/music') {
-                    // Root level - show folders and root files
-                    manifest.folders.forEach(folder => {
-                        items.push({ name: folder.name, type: 'folder' });
-                    });
-                    manifest.files.forEach(file => {
+            } else {
+                const folder = manifest.folders.find(f => f.name === currentPath);
+                if (folder) {
+                    folder.files.forEach(file => {
                         items.push({ name: file, type: 'audio' });
                     });
-                } else {
-                    // Inside a folder
-                    const folderName = currentPath.split('/').pop();
-                    const folder = manifest.folders.find(f => f.name === folderName);
-                    
-                    if (folder) {
-                        folder.files.forEach(file => {
-                            items.push({ name: file, type: 'audio' });
-                        });
-                    }
                 }
-                
-                console.log('Loaded items:', items);
-                currentFiles = items;
-                renderTracks();
-            } catch (error) {
-                console.error('Error loading files:', error);
-                trackList.innerHTML = '<li class="track-item">ERROR LOADING FILES</li>';
             }
-        }
-
-        async function folderHasMp3s(folderPath) {
-            try {
-                const response = await fetch(`${folderPath}/`);
-                const html = await response.text();
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const links = Array.from(doc.querySelectorAll('a'));
-                
-                for (const link of links) {
-                    const href = link.getAttribute('href');
-                    if (href && href.toLowerCase().endsWith('.mp3')) {
-                        return true;
-                    }
-                    if (href && href.endsWith('/') && href !== '../') {
-                        // Recursively check subfolders
-                        const name = decodeURIComponent(href.replace(/\/$/, ''));
-                        const hasMp3s = await folderHasMp3s(`${folderPath}/${name}`);
-                        if (hasMp3s) return true;
-                    }
-                }
-                return false;
-            } catch {
-                return false;
-            }
+            
+            currentFiles = items;
+            renderTracks();
         }
 
         function renderTracks() {
             trackList.innerHTML = '';
+            pathDisplay.textContent = currentPath === 'root' ? '/MUSIC' : `/MUSIC/${currentPath}`.toUpperCase();
             
-            // Update path display
-            pathDisplay.textContent = '/' + currentPath.toUpperCase();
-            
-            // Add parent directory option if not at root
-            if (currentPath !== '../../media/music') {
+            if (currentPath !== 'root') {
                 const li = document.createElement('li');
                 li.className = 'track-item parent-folder';
                 li.innerHTML = '<span class="track-name">&nbsp;[PARENT]</span><span class="track-type">&lt;DIR&gt;</span>';
-                li.onclick = () => navigateUp();
+                li.onclick = navigateUp;
                 trackList.appendChild(li);
             }
 
@@ -202,13 +119,12 @@
                 const li = document.createElement('li');
                 
                 if (item.type === 'folder') {
-                    li.className = 'track-item folder-item';
+                    li.className = 'track-item';
                     li.innerHTML = `<span class="track-name">${item.name}</span><span class="track-type">&lt;DIR&gt;</span>`;
                     li.onclick = () => navigateInto(item.name);
-                } else if (item.type === 'audio') {
+                } else {
                     li.className = 'track-item audio';
                     li.innerHTML = `<span class="track-name">${item.name}</span>`;
-                    // Calculate audio-only index
                     const audioFiles = currentFiles.filter(f => f.type === 'audio');
                     const audioIndex = audioFiles.findIndex(f => f.name === item.name);
                     li.onclick = () => playFile(audioIndex);
@@ -217,44 +133,28 @@
                 trackList.appendChild(li);
             });
             
-            // Update scroll arrows after content changes
             setTimeout(updateScrollArrows, 100);
         }
 
-        async function navigateInto(folderName) {
-            currentPath = `${currentPath}/${folderName}`;
-            await loadFiles();
+        function navigateInto(folderName) {
+            currentPath = folderName;
+            loadFiles();
         }
 
-        async function navigateUp() {
-            const parts = currentPath.split('/');
-            parts.pop();
-            currentPath = parts.join('/') || '../../media/music';
-            await loadFiles();
-        }
-
-        function selectFile(index) {
-            const items = document.querySelectorAll('.track-item.audio');
-            items.forEach((item, i) => {
-                item.classList.toggle('selected', i === index);
-            });
+        function navigateUp() {
+            currentPath = 'root';
+            loadFiles();
         }
 
         function playFile(index) {
-            selectFile(index);
-            
             const audioFiles = currentFiles.filter(f => f.type === 'audio');
             currentTrackIndex = index;
             const file = audioFiles[index];
             
             if (file) {
-                // Initialize audio context on first play
-                if (!audioContext) {
-                    initAudioContext();
-                }
-                
-                audioPlayer.src = `${currentPath}/${file.name}`;
-                audioPlayer.currentTime = 0; // Reset to start
+                // Construct path based on current location
+                const basePath = currentPath === 'root' ? '../../media/music' : `../../media/music/${currentPath}`;
+                audioPlayer.src = `${basePath}/${file.name}`;
                 audioPlayer.play();
                 isPlaying = true;
                 
@@ -269,83 +169,79 @@
             const audioFiles = currentFiles.filter(f => f.type === 'audio');
             const currentFile = audioFiles[currentTrackIndex];
             
-            items.forEach((item, i) => {
+            items.forEach(item => {
                 const itemName = item.querySelector('.track-name').textContent;
-                item.classList.toggle('playing', currentFile && itemName === currentFile.name && !audioPlayer.paused);
-            });
-        }
-
-        function setupEventListeners() {
-            playPauseBtn.onclick = () => {
-                if (isPlaying) {
-                    audioPlayer.pause();
-                    isPlaying = false;
-                    playPauseBtn.textContent = '[PLAY]';
-                    updatePlayingState();
-                } else {
-                    if (currentTrackIndex >= 0) {
-                        audioPlayer.play();
-                        isPlaying = true;
-                        playPauseBtn.textContent = '[PAUSE]';
-                        updatePlayingState();
+                item.classList.remove('selected', 'playing');
+                if (currentFile && itemName === currentFile.name) {
+                    if (!audioPlayer.paused) {
+                        item.classList.add('playing');
                     } else {
-                        const audioFiles = currentFiles.filter(f => f.type === 'audio');
-                        if (audioFiles.length > 0) {
-                            playFile(0);
-                        }
+                        item.classList.add('selected');
                     }
                 }
-            };
-
-            hideShowBtn.onclick = () => {
-                const isHidden = controlsBox.style.display === 'none';
-                if (isHidden) {
-                    controlsBox.style.display = 'flex';
-                    playlistBox.style.display = 'block';
-                    hideShowBtn.textContent = '[HIDE]';
-                } else {
-                    controlsBox.style.display = 'none';
-                    playlistBox.style.display = 'none';
-                    hideShowBtn.textContent = '[SHOW]';
-                }
-            };
-
-            audioPlayer.addEventListener('timeupdate', () => {
-                const current = formatTime(audioPlayer.currentTime);
-                const total = formatTime(audioPlayer.duration);
-                timeDisplay.textContent = `${current} / ${total}`;
-            });
-
-            playlistScroll.addEventListener('scroll', updateScrollArrows);
-
-            audioPlayer.addEventListener('ended', () => {
-                const audioFiles = currentFiles.filter(f => f.type === 'audio');
-                if (currentTrackIndex < audioFiles.length - 1) {
-                    playFile(currentTrackIndex + 1);
-                } else {
-                    isPlaying = false;
-                    playPauseBtn.textContent = '[PLAY]';
-                }
-            });
-
-            audioPlayer.addEventListener('play', () => {
-                isPlaying = true;
-                updatePlayingState();
-            });
-
-            audioPlayer.addEventListener('pause', () => {
-                isPlaying = false;
-                updatePlayingState();
-            });
-
-            // Keyboard controls
-            document.addEventListener('keydown', (e) => {
-                if (e.code === 'Space') {
-                    e.preventDefault();
-                    playPauseBtn.click();
-                }
             });
         }
+
+        playPauseBtn.onclick = () => {
+            if (isPlaying) {
+                audioPlayer.pause();
+                isPlaying = false;
+                playPauseBtn.textContent = '[PLAY]';
+            } else {
+                if (currentTrackIndex >= 0) {
+                    audioPlayer.play();
+                    isPlaying = true;
+                    playPauseBtn.textContent = '[PAUSE]';
+                } else {
+                    const audioFiles = currentFiles.filter(f => f.type === 'audio');
+                    if (audioFiles.length > 0) playFile(0);
+                }
+            }
+            updatePlayingState();
+        };
+
+        hideShowBtn.onclick = () => {
+            const isHidden = controlsBox.style.display === 'none';
+            controlsBox.style.display = isHidden ? 'flex' : 'none';
+            playlistBox.style.display = isHidden ? 'block' : 'none';
+            hideShowBtn.textContent = isHidden ? '[HIDE BROWSER]' : '[SHOW BROWSER]';
+        };
+
+        audioPlayer.addEventListener('timeupdate', () => {
+            const current = formatTime(audioPlayer.currentTime);
+            const total = formatTime(audioPlayer.duration);
+            timeDisplay.textContent = `${current} / ${total}`;
+        });
+
+        audioPlayer.addEventListener('ended', () => {
+            const audioFiles = currentFiles.filter(f => f.type === 'audio');
+            if (currentTrackIndex < audioFiles.length - 1) {
+                playFile(currentTrackIndex + 1);
+            } else {
+                isPlaying = false;
+                playPauseBtn.textContent = '[PLAY]';
+                updatePlayingState();
+            }
+        });
+
+        audioPlayer.addEventListener('play', () => {
+            isPlaying = true;
+            updatePlayingState();
+        });
+
+        audioPlayer.addEventListener('pause', () => {
+            isPlaying = false;
+            updatePlayingState();
+        });
+
+        playlistScroll.addEventListener('scroll', updateScrollArrows);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                playPauseBtn.click();
+            }
+        });
 
         function formatTime(seconds) {
             if (isNaN(seconds)) return '0:00';
@@ -354,8 +250,7 @@
             return `${mins}:${secs.toString().padStart(2, '0')}`;
         }
 
-        // Start the app
-        init();
+        loadFiles();
     </script>
 </body>
 </html>
