@@ -1,22 +1,26 @@
 {
-    "folders": [
-      {
-        "name": "Exports",
-        "files": [
-          "Ambient_001.mp3",
-          "Ambient_002.mp3",
-          "Downtempo_001.mp3",
-          "Downtempo_002.mp3",
-          "Drone_Ambient_Looping.mp3",
-          "Drone_Percussion.mp3",
-          "Joyful_001.mp3",
-          "Joyful_002.mp3",
-          "Uptempo_001.mp3",
-          "Uptempo_002.mp3"
-        ]
-      }
-    ],
-    "files": [
-      "wl_amb.mp3"
-    ]
-  }
+  "folders": [
+    {
+      "name": "ambient",
+      "files": [
+        "biscayne-bay.mp3",
+        "mastercard.mp3"
+      ]
+    },
+    {
+      "name": "old-demos",
+      "files": [
+        "Io-passer-un'ora.mp3",
+        "arp-jam.mp3",
+        "ashanti-ukg.mp3",
+        "intake-rough-draft.mp3",
+        "skipper.mp3",
+        "whine-&-acid.mp3"
+      ]
+    }
+  ],
+  "files": [
+    "back-wit-it.mp3",
+    "ok-dj.mp3"
+  ]
+}
