@@ -112,6 +112,8 @@ button {
         left: 1.5rem;
         right: 1.5rem;
         width: calc(100vw - 3rem);
+        margin: 0;
+        padding: 0;
     }
 
     .title-box,

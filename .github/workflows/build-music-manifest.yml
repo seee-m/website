@@ -1,0 +1,100 @@
+name: Build Music Manifest
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'media/music/**'
+      - '.github/workflows/build-music-manifest.yml'
+  workflow_dispatch:
+
+jobs:
+  build-manifest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build music manifest
+        run: |
+          cd pages/music
+
+          # Create manifest JSON
+          cat > music-manifest.json << 'EOF'
+          {
+            "folders": [],
+            "files": []
+          }
+          EOF
+
+          # Use Node.js to build the manifest
+          node << 'NODESCRIPT'
+          const fs = require('fs');
+          const path = require('path');
+
+          const musicDir = '../../media/music';
+          const manifest = {
+            folders: [],
+            files: []
+          };
+
+          // Read music directory
+          const items = fs.readdirSync(musicDir, { withFileTypes: true });
+
+          // Process folders
+          items.forEach(item => {
+            if (item.isDirectory()) {
+              const folderPath = path.join(musicDir, item.name);
+              const files = fs.readdirSync(folderPath)
+                .filter(file => /\.(mp3|wav|ogg|m4a|flac)$/i.test(file))
+                .sort();
+
+              if (files.length > 0) {
+                manifest.folders.push({
+                  name: item.name,
+                  files: files
+                });
+              }
+            } else if (/\.(mp3|wav|ogg|m4a|flac)$/i.test(item.name)) {
+              manifest.files.push(item.name);
+            }
+          });
+
+          // Sort folders and files
+          manifest.folders.sort((a, b) => a.name.localeCompare(b.name));
+          manifest.files.sort();
+
+          // Write manifest
+          fs.writeFileSync('music-manifest.json', JSON.stringify(manifest, null, 2));
+          console.log('Music manifest generated successfully!');
+          console.log('Folders:', manifest.folders.length);
+          console.log('Root files:', manifest.files.length);
+          NODESCRIPT
+
+      - name: Check for changes
+        id: check_changes
+        run: |
+          git diff --exit-code pages/music/music-manifest.json || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Commit and push changes
+        if: steps.check_changes.outputs.changed == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add pages/music/music-manifest.json
+          git commit -m "🎵 Update music manifest
+
+          🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+          Co-Authored-By: Claude <noreply@anthropic.com>"
+          git push

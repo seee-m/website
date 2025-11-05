@@ -11,13 +11,22 @@ body {
     overflow: auto;
 }
 
-/* Header - Override shared positioning */
+/* Header - Music page uses body padding instead of absolute positioning */
 .header {
-    position: static;
+    position: relative;
     top: auto;
     left: auto;
     max-width: 460px;
+    z-index: 10000;
 }
+
+/* SVG - Logo styling */
+
+.svg-logo {
+    width: 80px;
+    height: auto;
+    fill: #00ff99;
+  }
 
 /* Box - Music specific styling */
 .box {
@@ -25,11 +34,13 @@ body {
     text-transform: uppercase;
     font-size: 12px;
     letter-spacing: 0.05rem;
+    background: #000;
 }
 
 .title-box {
-    background: #00ff99;
-    color: #000;
+    background: #000;
+    color: #00ff99;
+    border: 1px solid #00ff99;
     min-width: 460px;
     max-width: 460px;
 }
@@ -67,6 +78,10 @@ button:hover {
     opacity: 0.5;
 }
 
+.title-box button {
+    color: #00ff99;
+}
+
 /* Playlist specific styles */
 .playlist-scroll {
     overflow-y: auto;
@@ -75,7 +90,21 @@ button:hover {
 }
 
 .playlist-scroll::-webkit-scrollbar {
-    display: none;
+    width: 8px;
+}
+
+.playlist-scroll::-webkit-scrollbar-track {
+    background: #000;
+}
+
+.playlist-scroll::-webkit-scrollbar-thumb {
+    background: #00ff99;
+    border: none;
+}
+
+.playlist-scroll::-webkit-scrollbar-thumb:hover {
+    background: #00ff99;
+    opacity: 0.8;
 }
 
 .track-list {
@@ -124,26 +153,36 @@ button:hover {
     content: "↲ ";
 }
 
-.scroll-arrow {
-    position: absolute;
-    right: 10px;
-    font-size: 12px;
+/* ASCII Fireworks Visualizer */
+#fireworks {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
     pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.2s;
 }
 
-.scroll-arrow.visible {
-    opacity: 1;
+/* CRT Scanlines overlay - covers entire page */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15),
+        rgba(0, 0, 0, 0.15) 1px,
+        transparent 1px,
+        transparent 2px
+    );
+    pointer-events: none;
+    z-index: 9999;
 }
 
-.scroll-arrow-up {
-    top: 5px;
-}
-
-.scroll-arrow-down {
-    bottom: 5px;
-}
 
 /* Mobile */
 @media (max-width: 600px) {
@@ -152,7 +191,12 @@ button:hover {
     }
 
     .header {
-        max-width: 100%;
+        position: absolute;
+        top: 1.5rem;
+        left: 1.5rem;
+        right: 1.5rem;
+        width: calc(100vw - 3rem);
+        max-width: none;
     }
 
     .box,
@@ -163,6 +207,7 @@ button:hover {
         min-width: 0;
         max-width: 100%;
         width: 100%;
+        background: #000;
     }
 
     button {
