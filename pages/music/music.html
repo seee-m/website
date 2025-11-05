@@ -90,7 +90,7 @@
                     showScaleY: false,
                     reflexRatio: 0,
                     fillAlpha: 0,
-                    lineWidth: 2,
+                    lineWidth: 1.5,
                     frequencyScale: 'linear',
                     smoothing: 0.7,
                     minFreq: 20,
@@ -119,78 +119,36 @@
 
         async function loadFiles() {
             try {
-                console.log('Fetching from:', `${currentPath}/`);
-                const response = await fetch(`${currentPath}/`);
-                console.log('Response status:', response.status);
-                const html = await response.text();
-                console.log('HTML length:', html.length);
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const links = Array.from(doc.querySelectorAll('a'));
-                console.log('Found links:', links.length);
+                console.log('Loading from:', currentPath);
+                
+                // Load the manifest
+                const response = await fetch('music-manifest.json');
+                const manifest = await response.json();
                 
                 const items = [];
                 
-                for (const link of links) {
-                    const href = link.getAttribute('href');
-                    console.log('Processing link:', href);
-                    if (!href || href === '../' || href === '/' || href.startsWith('?')) {
-                        console.log('  Skipped (invalid href)');
-                        continue;
-                    }
+                // Determine which level we're at
+                if (currentPath === '../../media/music') {
+                    // Root level - show folders and root files
+                    manifest.folders.forEach(folder => {
+                        items.push({ name: folder.name, type: 'folder' });
+                    });
+                    manifest.files.forEach(file => {
+                        items.push({ name: file, type: 'audio' });
+                    });
+                } else {
+                    // Inside a folder
+                    const folderName = currentPath.split('/').pop();
+                    const folder = manifest.folders.find(f => f.name === folderName);
                     
-                    // Handle both relative and absolute paths
-                    let name = href;
-                    if (href.startsWith('/')) {
-                        // Convert absolute path to just the filename/foldername
-                        const parts = href.split('/').filter(p => p);
-                        name = parts[parts.length - 1];
-                        
-                        // Skip if this is a parent/breadcrumb path (not a direct child)
-                        const fullPath = href.replace(/\/$/, '');
-                        const expectedPrefix = currentPath.replace('../../', '/');
-                        if (!fullPath.startsWith(expectedPrefix) || fullPath === expectedPrefix) {
-                            console.log('  Skipped (parent/breadcrumb path)');
-                            continue;
-                        }
-                        
-                        console.log('  Converted absolute path to name:', name);
-                    }
-                    name = decodeURIComponent(name.replace(/\/$/, ''));
-                    
-                    // Skip if we end up with an empty name
-                    if (!name) {
-                        console.log('  Skipped (empty name)');
-                        continue;
-                    }
-                    
-                    console.log('  Final name:', name);
-                    console.log('  Ends with /:', href.endsWith('/'));
-                    console.log('  Ends with .mp3:', href.toLowerCase().endsWith('.mp3'));
-                    
-                    if (href.endsWith('/')) {
-                        console.log('  ✓ Added as FOLDER:', name);
-                        items.push({ name, type: 'folder' });
-                    } else if (href.toLowerCase().endsWith('.mp3')) {
-                        console.log('  ✓ Added as MP3:', name);
-                        items.push({ name, type: 'audio' });
-                    } else if (!name.includes('.')) {
-                        // If it doesn't have a file extension, assume it's a folder
-                        console.log('  ✓ Added as FOLDER (no extension):', name);
-                        items.push({ name, type: 'folder' });
-                    } else {
-                        console.log('  Skipped (not folder or MP3)');
+                    if (folder) {
+                        folder.files.forEach(file => {
+                            items.push({ name: file, type: 'audio' });
+                        });
                     }
                 }
                 
-                // Sort: folders first, then files
-                items.sort((a, b) => {
-                    if (a.type === 'folder' && b.type !== 'folder') return -1;
-                    if (a.type !== 'folder' && b.type === 'folder') return 1;
-                    return a.name.localeCompare(b.name);
-                });
-                
-                console.log('Final items:', items);
+                console.log('Loaded items:', items);
                 currentFiles = items;
                 renderTracks();
             } catch (error) {

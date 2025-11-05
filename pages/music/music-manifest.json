@@ -1,0 +1,22 @@
+{
+    "folders": [
+      {
+        "name": "Exports",
+        "files": [
+          "Ambient_001.mp3",
+          "Ambient_002.mp3",
+          "Downtempo_001.mp3",
+          "Downtempo_002.mp3",
+          "Drone_Ambient_Looping.mp3",
+          "Drone_Percussion.mp3",
+          "Joyful_001.mp3",
+          "Joyful_002.mp3",
+          "Uptempo_001.mp3",
+          "Uptempo_002.mp3"
+        ]
+      }
+    ],
+    "files": [
+      "wl_amb.mp3"
+    ]
+  }
