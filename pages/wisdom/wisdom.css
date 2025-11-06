@@ -46,6 +46,8 @@ body {
 
 /* SVG Logo - Wisdom theme (white) */
 .svg-logo {
+    max-width: 120px;
+    height: auto;
     fill: #d7d7d7;
 }
 
