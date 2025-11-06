@@ -4,32 +4,32 @@
 
 /* Base - Page-specific background */
 body {
-    background-color: #ffffff;
+    background-color: #d7d7d7;
 }
 
 /* Directory Modal Theme - Wisdom page (white background, black border) */
 :root {
-    --directory-bg: #ffffff;
-    --directory-border: 1px solid #000000;
+    --directory-bg: #d7d7d7;
+    --directory-border: 1px solid #0b0b0b;
     --directory-hover-filter: brightness(0) saturate(100%) opacity(0.5);
 }
 
 /* Text Overlay - Wisdom theme (black on white) */
 .text-overlay {
-    color: #000000;
+    color: #0b0b0b;
 }
 
 /* Box Components - Wisdom theme (black/white) */
 
 .title-box {
-    background: #000000;
-    color: #ffffff;
-    border: 1px solid #000000;
+    background: #0b0b0b;
+    color: #d7d7d7;
+    border: 1px solid #0b0b0b;
 }
 
 .controls-box {
-    background: #ffffff;
-    border: 1px solid #000000;
+    background: #d7d7d7;
+    border: 1px solid #0b0b0b;
     border-top: none;
     gap: 10px;
 }
@@ -37,7 +37,7 @@ body {
 /* Text Colors - Wisdom theme */
 .title,
 .home-link {
-    color: #ffffff;
+    color: #d7d7d7;
 }
 
 .home-link:hover {
@@ -46,11 +46,11 @@ body {
 
 /* SVG Logo - Wisdom theme (white) */
 .svg-logo {
-    fill: #ffffff;
+    fill: #d7d7d7;
 }
 
 .nav-link {
-    color: #000000;
+    color: #0b0b0b;
 }
 
 .nav-link:hover {
