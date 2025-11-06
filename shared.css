@@ -64,6 +64,22 @@ body {
 
 .title-box {
     min-height: 6rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.title-box-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.title-box-bottom {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: flex-end;
 }
 
 .nav-box {

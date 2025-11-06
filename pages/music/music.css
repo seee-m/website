@@ -43,6 +43,10 @@ body {
     border: 1px solid #00ff99;
 }
 
+.title-box-bottom {
+    justify-content: start;
+}
+
 .controls-box {
     background: #000;
     border: 1px solid #00ff99;
