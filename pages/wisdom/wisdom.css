@@ -7,38 +7,31 @@ body {
     background-color: #ffffff;
 }
 
-/* Text Overlay - Wisdom specific (black on white) */
-.text-overlay {
-    font-family: 'Geist', sans-serif;
-    font-weight: 700;
-    font-size: clamp(3rem, 12vw, 15rem);
-    max-width: 90vw;
-    color: #000000;
-    text-align: center;
-    line-height: 0.9;
-    letter-spacing: -0.02rem;
-    text-transform: uppercase;
-    position: fixed;
-    top: 50vh;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 0;
-    pointer-events: none;
+/* Directory Modal Theme - Wisdom page (white background, black border) */
+:root {
+    --directory-bg: #ffffff;
+    --directory-border: 1px solid #000000;
+    --directory-hover-filter: brightness(0) saturate(100%) opacity(0.5);
 }
 
-/* Box Colors - Wisdom theme (black/white) */
+/* Text Overlay - Wisdom theme (black on white) */
+.text-overlay {
+    color: #000000;
+}
+
+/* Box Components - Wisdom theme (black/white) */
+
 .title-box {
     background: #000000;
-}
-
-.nav-box {
-    background: #ffffff;
+    color: #ffffff;
     border: 1px solid #000000;
 }
 
-.readout-box {
+.controls-box {
     background: #ffffff;
     border: 1px solid #000000;
+    border-top: none;
+    gap: 10px;
 }
 
 /* Text Colors - Wisdom theme */
@@ -51,22 +44,15 @@ body {
     opacity: 0.5;
 }
 
+/* SVG Logo - Wisdom theme (white) */
+.svg-logo {
+    fill: #ffffff;
+}
+
 .nav-link {
     color: #000000;
 }
 
 .nav-link:hover {
     opacity: 0.5;
-}
-
-.readout {
-    color: #000000;
-}
-
-/* Mobile - Text overlay adjustments */
-@media (max-width: 600px) {
-    .text-overlay {
-        font-size: clamp(2rem, 15vw, 6rem);
-        line-height: 0.95;
-    }
 }

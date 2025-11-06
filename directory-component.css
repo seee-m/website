@@ -1,0 +1,78 @@
+/* =========================
+   DIRECTORY MODAL COMPONENT
+   ========================= */
+
+/* Modal Overlay - Hidden by default, very high z-index */
+.directory-modal {
+    position: fixed;
+    top: auto;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    display: none;
+    z-index: 100000;
+    width: 460px;
+    max-width: calc(100vw - 3rem);
+    background: var(--directory-bg, #f8f89f);
+    border: var(--directory-border, none);
+    padding: 1.5rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.directory-modal.active {
+    display: block;
+}
+
+/* Hide scrollbars */
+.directory-modal::-webkit-scrollbar {
+    display: none;
+}
+
+.directory-modal {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Single Column Layout - Always */
+.directory-grid {
+    column-count: 1 !important;
+    width: 100%;
+    margin: 0;
+}
+
+.directory-box {
+    display: block;
+    cursor: pointer;
+    text-decoration: none;
+    line-height: 0;
+    break-inside: avoid;
+    margin-bottom: 1rem;
+    width: 100%;
+}
+
+.directory-box img,
+.directory-box svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    filter: var(--directory-default-filter, none);
+    transition: filter 0.05s;
+}
+
+.directory-box:hover img,
+.directory-box:hover svg {
+    filter: var(--directory-hover-filter, invert(27%) sepia(98%) saturate(7471%) hue-rotate(3deg) brightness(99%) contrast(118%));
+}
+
+/* Remove last item margin */
+.directory-box:last-child {
+    margin-bottom: 0;
+}
+
+/* Mobile - Full width */
+@media (max-width: 600px) {
+    .directory-modal {
+        width: calc(100vw - 3rem);
+        max-width: calc(100vw - 3rem);
+    }
+}

@@ -11,6 +11,13 @@ body {
     overflow: auto;
 }
 
+/* Directory Modal Theme - Music page (neon green background, 30% black hover) */
+:root {
+    --directory-bg: #00ff99;
+    --directory-border: none;
+    --directory-hover-filter: brightness(0) saturate(100%) opacity(0.3);
+}
+
 /* Header - Music page uses body padding instead of absolute positioning */
 .header {
     position: relative;
@@ -20,20 +27,13 @@ body {
     z-index: 10000;
 }
 
-/* SVG - Logo styling */
-
+/* SVG Logo - Music theme (neon green) */
 .svg-logo {
-    width: auto;
-    height: 40px;
     fill: #00ff99;
-  }
+}
 
-/* Box - Music specific styling */
+/* Box - Music theme (neon green on black) */
 .box {
-    padding: 0.625rem;
-    text-transform: uppercase;
-    font-size: 12px;
-    letter-spacing: 0.05rem;
     background: #000;
 }
 
@@ -41,19 +41,12 @@ body {
     background: #000;
     color: #00ff99;
     border: 1px solid #00ff99;
-    min-width: 460px;
-    max-width: 460px;
 }
 
 .controls-box {
     background: #000;
     border: 1px solid #00ff99;
     border-top: none;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    min-width: 460px;
-    max-width: 460px;
 }
 
 .playlist-box {
@@ -62,8 +55,6 @@ body {
     border-top: none;
     padding: 0;
     position: relative;
-    min-width: 460px;
-    max-width: 460px;
 }
 
 /* Buttons - Music theme */
@@ -184,7 +175,7 @@ body::before {
 }
 
 
-/* Mobile */
+/* Mobile - Music specific */
 @media (max-width: 600px) {
     body {
         padding: 1.5rem;
@@ -199,19 +190,8 @@ body::before {
         max-width: none;
     }
 
-    .box,
-    .title-box,
-    .controls-box,
     .playlist-box {
-        font-size: 0.75rem;
-        min-width: 0;
-        max-width: 100%;
-        width: 100%;
         background: #000;
-    }
-
-    button {
-        font-size: 0.75rem;
     }
 
     .playlist-scroll {

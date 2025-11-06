@@ -6,6 +6,7 @@
     <title>Music Player</title>
     <link rel="stylesheet" href="../../shared.css">
     <link rel="stylesheet" href="music.css">
+    <link rel="stylesheet" href="../../directory-component.css">
 </head>
 
 <body>
@@ -29,8 +30,10 @@
             
             </div>
             <br><br>
-            <button id="playPauseBtn">[PLAY]</button>
+            <button id="directoryToggle">[DIRECTORY]</button>
             <button id="hideShowBtn">[HIDE BROWSER]</button>
+            <button id="playPauseBtn">[PLAY]</button>
+
         </div>
 
         <div class="box controls-box" id="controlsBox">
@@ -498,5 +501,6 @@
         // Start animation loop
         drawGrid();
     </script>
+    <script src="../../directory-component.js"></script>
 </body>
 </html>

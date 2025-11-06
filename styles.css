@@ -7,6 +7,13 @@ body {
     background-color: #000108;
 }
 
+/* Directory Modal Theme - Index page (yellow background, red hover) */
+:root {
+    --directory-bg: #f8f89f;
+    --directory-border: none;
+    --directory-hover-filter: invert(27%) sepia(98%) saturate(7471%) hue-rotate(3deg) brightness(99%) contrast(118%);
+}
+
 /* Layout - Index specific */
 .container {
     position: relative;
@@ -28,24 +35,26 @@ body {
 }
 
 .work {
-    position: absolute;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     max-width: 80vw;
-    max-height: 80vh;
+    max-height: 90vh;
     object-fit: contain;
     z-index: 1;
 }
 
-/* Box Colors - Index theme (red) */
+/* Box Components - Index theme (red) */
 .title-box {
     background: #ff0000;
+    color: #f3f3f3;
+    border: none;
 }
 
-.nav-box {
-    background: #000108;
-}
-
-.readout-box {
-    background: #f3f3f3;
+.controls-box {
+    background: #ffffff;
+    border: none;
 }
 
 /* Text Colors - Index theme */
@@ -55,22 +64,30 @@ body {
 }
 
 .home-link:hover {
-    color: #000108;
+    color: #000000;
 }
 
 .nav-link:hover {
-    color: #ff0000;
+    color: #000000;
 }
 
 .readout {
-    color: #000108;
+    color: #000000;
+    margin: 0;
+}
+
+/* SVG Logo - Index theme (white) */
+.svg-logo {
+    fill: #f3f3f3;
 }
 
 /* Mobile - Index specific */
 @media (max-width: 600px) {
     .work {
         position: absolute;
+        top: auto;
         left: 1.5rem;
+        transform: none;
         width: calc(100vw - 3rem);
         max-width: calc(100vw - 3rem);
         height: auto;

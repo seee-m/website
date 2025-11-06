@@ -49,13 +49,21 @@ body {
 /* =========================
    BOX COMPONENTS - BASE
    ========================= */
+.box,
 .title-box,
 .nav-box,
-.readout-box {
+.readout-box,
+.controls-box {
     padding: 0.625rem;
     text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.05rem;
     min-width: 460px;
     max-width: 460px;
+}
+
+.title-box {
+    min-height: 6rem;
 }
 
 .nav-box {
@@ -67,6 +75,12 @@ body {
 
 .readout-box {
     display: flex;
+}
+
+.controls-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 /* =========================
@@ -106,6 +120,34 @@ button {
 }
 
 /* =========================
+   SVG LOGO - BASE
+   ========================= */
+.svg-logo {
+    width: auto;
+    height: var(--logo-height, 40px);
+}
+
+/* =========================
+   TEXT OVERLAY - BASE
+   ========================= */
+.text-overlay {
+    font-family: 'Geist', sans-serif;
+    font-weight: 700;
+    font-size: clamp(3rem, 12vw, 15rem);
+    max-width: 90vw;
+    text-align: center;
+    line-height: 0.9;
+    letter-spacing: -0.02rem;
+    text-transform: uppercase;
+    position: fixed;
+    top: 50vh;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* =========================
    MOBILE RESPONSIVE
    ========================= */
 @media (max-width: 600px) {
@@ -117,9 +159,11 @@ button {
         padding: 0;
     }
 
+    .box,
     .title-box,
     .nav-box,
-    .readout-box {
+    .readout-box,
+    .controls-box {
         min-width: 0;
         max-width: 100%;
         width: 100%;
@@ -127,8 +171,15 @@ button {
 
     .title,
     .home-link,
+    .home-text,
     .nav-link,
     .readout {
         font-size: 0.75rem;
+    }
+
+    .text-overlay {
+        font-size: clamp(2rem, 15vw, 6rem);
+        line-height: 0.95;
+        max-width: calc(100vw - 3rem);
     }
 }

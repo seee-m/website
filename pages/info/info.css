@@ -7,7 +7,15 @@ body {
     background-color: #000108;
 }
 
-/* Background Image - Links specific */
+/* Directory Modal Theme - Info page (black bg, 50% white items, 100% white hover) */
+:root {
+    --directory-bg: #000000;
+    --directory-border: none;
+    --directory-default-filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%) opacity(0.5);
+    --directory-hover-filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
+}
+
+/* Background Image - Info specific */
 .background-image {
     position: fixed;
     inset: 0;
@@ -18,47 +26,34 @@ body {
     z-index: -1;
 }
 
-/* Text Overlay - Links specific */
+/* Text Overlay - Info theme (gray text with dark stroke) */
 .text-overlay {
-    font-family: 'Geist', sans-serif;
-    font-weight: 700;
-    font-size: clamp(3rem, 12vw, 15rem);
-    max-width: 90vw;
     color: #dadada;
     -webkit-text-stroke: 0.018em #000108;
     paint-order: fill stroke;
-    text-align: center;
-    line-height: 0.9;
-    letter-spacing: -0.02rem;
-    text-transform: uppercase;
-    position: fixed;
-    top: 50vh;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 0;
-    pointer-events: none;
 }
 
-/* Box Colors - Links theme */
+/* Box Components - Info theme */
+
 .title-box {
     background: #f3f3f3;
+    color: #000108;
+    border: none;
 }
 
-.nav-box {
-    background: #000108;
-}
-
-.readout-box {
-    background: #f3f3f3;
+.controls-box {
+    background: #ffffff;
+    border: none;
 }
 
 /* Text Colors - Links theme */
-.title {
+.home-link {
     color: #000108;
 }
 
-.home-link {
+.home-text {
     color: #000108;
+    margin: 0;
 }
 
 .home-link:hover {
@@ -66,22 +61,19 @@ body {
 }
 
 .nav-link {
-    color: #f3f3f3;
-}
-
-.nav-link:hover {
-    color: var(--hover-color, #ff0000) !important;
-}
-
-.readout {
     color: #000108;
 }
 
-/* Mobile - Text overlay adjustments */
-@media (max-width: 600px) {
-    .text-overlay {
-        font-size: clamp(2rem, 15vw, 6rem);
-        line-height: 0.95;
-        max-width: calc(100vw - 3rem);
-    }
+.nav-link:hover {
+    color: #ffffff !important;
+}
+
+.readout {
+    color: #000000;
+    margin: 0;
+}
+
+/* SVG Logo - Info theme (dark) */
+.svg-logo {
+    fill: #000108;
 }
