@@ -7,12 +7,12 @@ body {
     background-color: #000108;
 }
 
-/* Directory Modal Theme - Info page (black bg, 50% white items, 100% white hover) */
+/* Directory Modal Theme - Info page (black bg, yellow hover) */
 :root {
     --directory-bg: #000000;
     --directory-border: none;
     --directory-default-filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%) opacity(0.5);
-    --directory-hover-filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
+    --directory-hover-filter: invert(89%) sepia(70%) saturate(1773%) hue-rotate(340deg) brightness(103%) contrast(101%);
 }
 
 /* Background Image - Info specific */
@@ -26,17 +26,15 @@ body {
     z-index: -1;
 }
 
-/* Text Overlay - Info theme (gray text with dark stroke) */
+/* Text Overlay - Info theme (yellow) */
 .text-overlay {
-    color: #dadada;
-    -webkit-text-stroke: 0.018em #000108;
-    paint-order: fill stroke;
+    color: #FFE600;
 }
 
 /* Box Components - Info theme */
 
 .title-box {
-    background: #f3f3f3;
+    background: #FFE600;
     color: #000108;
     border: none;
 }
@@ -44,6 +42,14 @@ body {
 .controls-box {
     background: #ffffff;
     border: none;
+}
+
+/* Links Container */
+.links-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
 }
 
 /* Text Colors - Links theme */
@@ -57,7 +63,7 @@ body {
 }
 
 .home-link:hover {
-    opacity: 0.5;
+    opacity: 0.3;
 }
 
 .nav-link {
@@ -65,7 +71,7 @@ body {
 }
 
 .nav-link:hover {
-    color: #ffffff !important;
+    opacity: 0.3;
 }
 
 .readout {

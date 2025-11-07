@@ -1,6 +1,0 @@
-#FFE600, #080808
-#00e42a, #15150b
-#ff36af, #55b8d6
-#ff4400ff, #07fff3
-#00fbffff, #ffee00ff
-#9b31ffff, #00ff99ff

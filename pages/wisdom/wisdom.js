@@ -240,54 +240,11 @@ function generator() {
 
 function displayText(text) {
     const textElement = document.getElementById('overlayText');
-    
-    // On mobile, position text centered between nav-box bottom and screen bottom
-    if (window.innerWidth <= 600) {
-        textElement.textContent = text;
-        
-        setTimeout(() => {
-            const navBox = document.querySelector('.nav-box');
-            if (navBox) {
-                const navBoxRect = navBox.getBoundingClientRect();
-                const navBoxBottom = navBoxRect.bottom;
-                const screenBottom = window.innerHeight;
-                const centerPoint = navBoxBottom + (screenBottom - navBoxBottom) / 2;
-                
-                textElement.style.top = centerPoint + 'px';
-            }
-            
-            const maxHeight = window.innerHeight * 0.6; // 60vh max
-            const maxWidth = window.innerWidth - 48; // Account for 1.5rem padding on each side
-            
-            // Reset to let clamp work
-            textElement.style.fontSize = '';
-            
-            // If it overflows height or width, scale it down
-            let currentSize = parseFloat(getComputedStyle(textElement).fontSize);
-            const minSize = 32; // 2rem minimum
-            
-            while ((textElement.scrollHeight > maxHeight || textElement.scrollWidth > maxWidth) && currentSize > minSize) {
-                currentSize -= 2;
-                textElement.style.fontSize = currentSize + 'px';
-            }
-        }, 50);
-    } else {
-        textElement.style.fontSize = '';
-        textElement.style.top = '';
-        textElement.textContent = text;
-    }
+    textElement.textContent = text;
 }
 
 // Event listener
 document.getElementById('generateButton').addEventListener('click', generator);
-
-// Handle resize
-window.addEventListener('resize', () => {
-    clearTimeout(window.resizeTimeout);
-    window.resizeTimeout = setTimeout(() => {
-        if (lastGenerated) displayText(lastGenerated);
-    }, 150);
-});
 
 // Generate initial text on load
 generator();
