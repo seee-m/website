@@ -14,7 +14,7 @@
     max-width: calc(100vw - 3rem);
     background: var(--directory-bg, #f8f89f);
     border: var(--directory-border, none);
-    padding: 1.5rem;
+    padding: 1rem;
     overflow-x: hidden;
     overflow-y: auto;
 }
@@ -70,7 +70,7 @@
 }
 
 /* Mobile - Full width */
-@media (max-width: 600px) {
+@media (max-width: 600px), (max-aspect-ratio: 1/1) {
     .directory-modal {
         width: calc(100vw - 3rem);
         max-width: calc(100vw - 3rem);

@@ -15,7 +15,7 @@
     <div class="container">
         <!-- Background and work images -->
         <img id="background" class="background" alt="Background">
-        <img id="work" class="work" alt="Work">
+        <div id="workContainer" class="work"></div>
         
         <!-- Header with title and navigation -->
         <header class="header">
@@ -28,7 +28,10 @@
                 
                 <div class="title-box-bottom">
                     <button id="directoryToggle" class="nav-link">[directory]</button>
-                    <button id="reroll" class="nav-link">[randomise]</button>
+                    <div style="display: flex; gap: 10px; margin-left: auto;">
+                        <button id="bgToggle" class="nav-link mono-text-button">⏻</button>
+                        <button id="reroll" class="nav-link">[randomise]</button>
+                    </div>
                 </div>
             </div>
 
@@ -65,7 +68,7 @@
             return item;
         }
         
-        // Load image list from text file
+        // Load media list from text file (images and videos)
         async function loadImages(filename, path) {
             try {
                 const response = await fetch(filename);
@@ -78,6 +81,11 @@
                 console.error(`Failed to load ${filename}:`, error);
                 return [];
             }
+        }
+
+        // Check if file is a video based on extension
+        function isVideo(filename) {
+            return filename.toLowerCase().endsWith('.mp4') || filename.toLowerCase().endsWith('.webm');
         }
         
         // Typewriter effect
@@ -101,7 +109,7 @@
             type();
         }
         
-        // Update displayed images
+        // Update displayed images/videos
         function refresh() {
             if (backgrounds.length) {
                 const bgPath = randomExcluding(backgrounds, lastBackground);
@@ -111,8 +119,29 @@
             if (works.length) {
                 const workPath = randomExcluding(works, lastWork);
                 lastWork = workPath;
-                document.getElementById('work').src = workPath;
-                
+
+                // Clear previous work media
+                const workContainer = document.getElementById('workContainer');
+                workContainer.innerHTML = '';
+
+                // Create appropriate element (video or image)
+                let mediaElement;
+                if (isVideo(workPath)) {
+                    mediaElement = document.createElement('video');
+                    mediaElement.src = workPath;
+                    mediaElement.autoplay = true;
+                    mediaElement.loop = true;
+                    mediaElement.muted = true;
+                    mediaElement.playsInline = true;
+                    mediaElement.alt = 'Work';
+                } else {
+                    mediaElement = document.createElement('img');
+                    mediaElement.src = workPath;
+                    mediaElement.alt = 'Work';
+                }
+
+                workContainer.appendChild(mediaElement);
+
                 // Extract filename from path and update readout
                 currentWorkFile = workPath.replace(WORK_PATH, '');
                 const readoutElement = document.getElementById('fileReadout');
@@ -129,20 +158,35 @@
 
         // Events
         document.getElementById('reroll').addEventListener('click', refresh);
-        
-        // Position work image below controls-box on mobile only
-        function positionWorkImage() {
-            if (window.innerWidth <= 600) {
-                const controlsBox = document.querySelector('.controls-box');
-                const workImg = document.getElementById('work');
 
-                if (controlsBox && workImg) {
+        // Background toggle
+        let backgroundVisible = true;
+        document.getElementById('bgToggle').addEventListener('click', function() {
+            const bgElement = document.getElementById('background');
+            backgroundVisible = !backgroundVisible;
+            bgElement.style.display = backgroundVisible ? 'block' : 'none';
+        });
+        
+        // Position work media below controls-box on mobile only
+        function positionWorkImage() {
+            const workContainer = document.getElementById('workContainer');
+
+            if (window.innerWidth <= 600 || window.innerHeight > window.innerWidth) {
+                const controlsBox = document.querySelector('.controls-box');
+
+                if (controlsBox && workContainer) {
                     const controlsBoxRect = controlsBox.getBoundingClientRect();
                     const controlsBoxBottom = controlsBoxRect.bottom;
 
-                    // Position work image so its top aligns with controls-box bottom plus 1.5rem spacing
-                    workImg.style.top = (controlsBoxBottom + 24) + 'px';  // 24px = 1.5rem
-                    workImg.style.bottom = 'auto';
+                    // Position work container so its top aligns with controls-box bottom plus 1.5rem spacing
+                    workContainer.style.top = (controlsBoxBottom + 24) + 'px';  // 24px = 1.5rem
+                    workContainer.style.bottom = 'auto';
+                }
+            } else {
+                // Reset positioning for desktop
+                if (workContainer) {
+                    workContainer.style.top = '';
+                    workContainer.style.bottom = '';
                 }
             }
         }

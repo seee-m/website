@@ -41,8 +41,16 @@ body {
     transform: translate(-50%, -50%);
     max-width: 80vw;
     max-height: 90vh;
-    object-fit: contain;
     z-index: 1;
+}
+
+.work img,
+.work video {
+    width: 100%;
+    height: 100%;
+    max-width: 80vw;
+    max-height: 90vh;
+    object-fit: contain;
 }
 
 /* Box Components - Index theme (red) */
@@ -53,7 +61,7 @@ body {
 }
 
 .controls-box {
-    background: #f3f3f3;
+    background: #000108;
     border: none;
     
 }
@@ -73,7 +81,7 @@ body {
 }
 
 .readout {
-    color: #000000;
+    color: #f3f3f3;
     margin: 0;
 }
 
@@ -83,17 +91,27 @@ body {
 }
 
 /* Mobile - Index specific */
-@media (max-width: 600px) {
+@media (max-width: 600px), (max-aspect-ratio: 1/1) {
     .work {
         position: absolute;
         top: auto;
         left: 1.5rem;
+        right: 1.5rem;
         transform: none;
         width: calc(100vw - 3rem);
         max-width: calc(100vw - 3rem);
         height: auto;
         max-height: none;
-        object-fit: scale-down;
+    }
+
+    .work img,
+    .work video {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        max-height: none;
+        object-fit: contain;
         object-position: top center;
     }
 }

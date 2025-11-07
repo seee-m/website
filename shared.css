@@ -136,6 +136,16 @@ button {
 }
 
 /* =========================
+   MONO TEXT BUTTON
+   ========================= */
+.mono-text-button {
+    font-size: 24px;
+    line-height: 1;
+    padding: 0;
+    margin: 0;
+}
+
+/* =========================
    SVG LOGO - BASE
    ========================= */
 .svg-logo {
@@ -166,7 +176,7 @@ button {
 /* =========================
    MOBILE RESPONSIVE
    ========================= */
-@media (max-width: 600px) {
+@media (max-width: 600px), (max-aspect-ratio: 1/1) {
     .header {
         left: 1.5rem;
         right: 1.5rem;
@@ -191,6 +201,10 @@ button {
     .nav-link,
     .readout {
         font-size: 0.75rem;
+    }
+
+    .mono-text-button {
+        font-size: 24px;
     }
 
     .text-overlay {

@@ -11,11 +11,17 @@ body {
     overflow: auto;
 }
 
-/* Directory Modal Theme - Music page (neon green background, 30% black hover) */
+/* Directory Modal Theme - Music page (black background, 50% green default, 100% green hover) */
 :root {
-    --directory-bg: #00ff99;
-    --directory-border: none;
-    --directory-hover-filter: brightness(0) saturate(100%) opacity(0.3);
+    --directory-bg: #000000;
+    --directory-border: 1px solid #00ff99;
+    --directory-default-filter: invert(78%) sepia(58%) saturate(464%) hue-rotate(80deg) brightness(104%) contrast(101%) opacity(0.5);
+    --directory-hover-filter: invert(78%) sepia(58%) saturate(464%) hue-rotate(80deg) brightness(104%) contrast(101%);
+}
+
+/* Remove top border from directory modal on music page */
+.directory-modal {
+    border-top: none;
 }
 
 /* Header - Music page uses body padding instead of absolute positioning */
@@ -180,7 +186,7 @@ body::before {
 
 
 /* Mobile - Music specific */
-@media (max-width: 600px) {
+@media (max-width: 600px), (max-aspect-ratio: 1/1) {
     body {
         padding: 1.5rem;
     }

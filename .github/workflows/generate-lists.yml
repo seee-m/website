@@ -1,4 +1,4 @@
-name: Generate Image Lists
+name: Generate Media Lists
 
 on:
   push:
@@ -18,49 +18,49 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         
-      - name: Generate image list files
+      - name: Generate media list files
         run: |
           python << 'EOF'
           import os
           
           def generate_image_list(directory, output_file):
-              """Generate a text file listing all images in a directory"""
+              """Generate a text file listing all images and videos in a directory"""
               if not os.path.exists(directory):
                   print(f"Directory not found: {directory}")
                   return
-              
-              # Get all image files, excluding the thumbs subdirectory
-              image_extensions = ('.jpg', '.jpeg', '.png', '.gif', '.webp')
-              images = []
-              
+
+              # Get all media files (images and videos), excluding the thumbs subdirectory
+              media_extensions = ('.jpg', '.jpeg', '.png', '.gif', '.webp', '.mp4', '.webm')
+              media_files = []
+
               for filename in os.listdir(directory):
                   filepath = os.path.join(directory, filename)
-                  # Skip if it's a directory or not an image
-                  if os.path.isdir(filepath) or not filename.lower().endswith(image_extensions):
+                  # Skip if it's a directory or not a supported media file
+                  if os.path.isdir(filepath) or not filename.lower().endswith(media_extensions):
                       continue
-                  images.append(filename)
-              
+                  media_files.append(filename)
+
               # Sort alphabetically for consistency
-              images.sort()
-              
+              media_files.sort()
+
               # Write to file
               output_path = os.path.join(directory, output_file)
               with open(output_path, 'w') as f:
-                  f.write('\n'.join(images))
-              
-              print(f"✓ Generated {output_path} with {len(images)} images")
+                  f.write('\n'.join(media_files))
+
+              print(f"✓ Generated {output_path} with {len(media_files)} media files")
           
           # Generate both list files
-          print("Generating image lists...")
+          print("Generating media lists...")
           generate_image_list('media/background', 'background.txt')
           generate_image_list('media/work', 'work.txt')
-          
-          print("\n✓ All image lists generated!")
+
+          print("\n✓ All media lists generated!")
           EOF
           
-      - name: Commit and push image lists
+      - name: Commit and push media lists
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add media/background/background.txt media/work/work.txt
-          git diff --quiet && git diff --staged --quiet || (git commit -m "📝 Auto-generate image list files" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "📝 Auto-generate media list files" && git push)

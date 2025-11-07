@@ -108,6 +108,9 @@
             toggleBtn.textContent = '[hide directory]';
         }
 
+        // Prevent body scroll
+        document.body.style.overflow = 'hidden';
+
         // Position modal at bottom of controls-box
         positionModal();
     }
@@ -122,6 +125,9 @@
         if (toggleBtn && toggleBtn.dataset.originalText) {
             toggleBtn.textContent = toggleBtn.dataset.originalText;
         }
+
+        // Restore body scroll
+        document.body.style.overflow = '';
     }
 
     function positionModal() {
