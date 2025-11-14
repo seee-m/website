@@ -241,12 +241,12 @@
     let SIMULATION_SPEED = (typeof localStorage !== 'undefined' && localStorage.getItem('simSpeed')) ? parseInt(localStorage.getItem('simSpeed')) : 1;
     let SCAN_SPEED = (typeof localStorage !== 'undefined' && localStorage.getItem('scanSpeed')) ? parseInt(localStorage.getItem('scanSpeed')) : 2;
     let TOP_THRESHOLD = (typeof localStorage !== 'undefined' && localStorage.getItem('topThreshold')) ? parseFloat(localStorage.getItem('topThreshold')) : 0.05;
-    let MIDDLE_THRESHOLD = (typeof localStorage !== 'undefined' && localStorage.getItem('middleThreshold')) ? parseFloat(localStorage.getItem('middleThreshold')) : 0.30;
+    let MIDDLE_THRESHOLD = (typeof localStorage !== 'undefined' && localStorage.getItem('middleThreshold')) ? parseFloat(localStorage.getItem('middleThreshold')) : 0.10;
     let MAX_FALL_DISTANCE = (typeof localStorage !== 'undefined' && localStorage.getItem('maxFall')) ? parseInt(localStorage.getItem('maxFall')) : 1200;
     let UPWARD_CHANCE = (typeof localStorage !== 'undefined' && localStorage.getItem('upwardChance')) ? parseFloat(localStorage.getItem('upwardChance')) : 0.1;
     let ENABLE_SCAN = (typeof localStorage !== 'undefined' && localStorage.getItem('enableScan')) ? localStorage.getItem('enableScan') !== 'false' : true;
     let RESOLUTION_SCALE = (typeof localStorage !== 'undefined' && localStorage.getItem('resolutionScale')) ? parseInt(localStorage.getItem('resolutionScale')) : 3;
-    let PIXEL_BORDER_SIZE = (typeof localStorage !== 'undefined' && localStorage.getItem('pixelBorder')) ? parseFloat(localStorage.getItem('pixelBorder')) : 0.75;
+    let PIXEL_BORDER_SIZE = (typeof localStorage !== 'undefined' && localStorage.getItem('pixelBorder')) ? parseFloat(localStorage.getItem('pixelBorder')) : 1;
     let UPLOADED_IMAGE_DATA = (typeof localStorage !== 'undefined' && localStorage.getItem('uploadedImage')) || null;
 
     let grid;
