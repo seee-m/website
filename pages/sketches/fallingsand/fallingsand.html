@@ -7,63 +7,151 @@
   <style>
     body {
       margin: 0;
-      padding: 20px;
+      padding: 0;
+      padding-left: 220px;
       background-color: #000000;
-      overflow-y: auto;
-      overflow-x: hidden;
+      overflow: hidden;
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
       font-family: 'Courier New', monospace;
       color: #959595;
     }
+    body.controls-hidden {
+      padding-left: 0px;
+    }
     canvas {
-      width: 80vw !important;
-      height: auto !important;
-      margin-bottom: 10px;
+      width: auto !important;
+      height: 80vh !important;
     }
     #controls {
-      margin-bottom: 20px;
-      padding-top: 10px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 220px;
+      z-index: 1000;
+      background-color: #000000;
+      border-right: 1px solid #333;
+      padding: 14px 12px 70px 12px;
       display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      max-width: 80vw;
-      justify-content: center;
-      align-items: center;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+      transition: transform 0.3s ease;
+    }
+    #controls.hidden {
+      display: none;
+    }
+    .fixed-buttons {
+      position: fixed;
+      bottom: 12px;
+      left: 12px;
+      z-index: 1001;
+      display: flex;
+      gap: 4px;
+      transition: all 0.3s ease;
+    }
+    .fixed-buttons button {
+      background: #000;
+      border: 1px solid #333;
+      color: #959595;
+      padding: 7px 12px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      cursor: pointer;
+      margin-bottom: 0;
+    }
+    .fixed-buttons button:hover {
+      border-color: #555;
+      color: #888;
     }
     .control-group {
       display: flex;
-      align-items: center;
-      gap: 5px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+      width: 100%;
     }
     label {
       font-size: 12px;
       color: #959595;
     }
+    .filename-display {
+      font-size: 10px;
+      color: #666;
+      margin-top: 2px;
+      word-break: break-all;
+    }
     input[type="number"] {
-      width: 60px;
+      width: 100%;
+      box-sizing: border-box;
       background: #000;
       border: 1px solid #333;
       color: #959595;
-      padding: 4px;
+      padding: 6px 8px;
       font-family: 'Courier New', monospace;
-      font-size: 12px;
+      font-size: 13px;
+    }
+    input[type="checkbox"] {
+      cursor: pointer;
+      width: 18px;
+      height: 18px;
     }
     button {
+      width: 100%;
+      box-sizing: border-box;
       background: #000;
       border: 1px solid #333;
       color: #959595;
-      padding: 6px 12px;
+      padding: 7px 12px;
       font-family: 'Courier New', monospace;
-      font-size: 12px;
+      font-size: 13px;
       cursor: pointer;
+      margin-bottom: 4px;
     }
-    button:hover {
+    button:last-child {
+      margin-bottom: 0;
+    }
+    button:hover:not(:disabled) {
       border-color: #555;
       color: #888;
+    }
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    input[type="file"] {
+      font-size: 11px;
+      color: #959595;
+      font-family: 'Courier New', monospace;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    input[type="file"]::file-selector-button {
+      background: #000;
+      border: 1px solid #333;
+      color: #959595;
+      padding: 5px 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    input[type="file"]::file-selector-button:hover {
+      border-color: #555;
+      color: #888;
+    }
+    .separator {
+      height: 1px;
+      background: #333;
+      margin: 8px 0;
+      width: 100%;
+    }
+    .bottom-controls {
+      margin-top: auto;
+      padding-top: 10px;
+      border-top: 1px solid #333;
     }
   </style>
 </head>
@@ -71,64 +159,120 @@
   <!-- p5.js library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
 
-  <!-- CCapture.js for video recording -->
-  <script src="https://cdn.jsdelivr.net/npm/ccapture.js@1.1.0/build/CCapture.all.min.js"></script>
-
   <!-- Controls -->
   <div id="controls">
     <div class="control-group">
-      <label>sim_speed:</label>
+      <label>upload_image</label>
+      <input type="file" id="imageUpload" accept="image/*">
+      <div class="filename-display" id="filenameDisplay" style="display: none;"></div>
+    </div>
+
+    <div class="separator"></div>
+
+    <div class="control-group">
+      <label>resolution_scale</label>
+      <input type="number" id="resolutionScale" value="3" min="1" max="10" step="1">
+    </div>
+    <div class="control-group">
+      <label>pixel_border</label>
+      <input type="number" id="pixelBorder" value="0.75" min="0" max="1" step="0.05">
+    </div>
+    <div class="control-group">
+      <label>sim_speed</label>
       <input type="number" id="simSpeed" value="1" min="1" max="10" step="1">
     </div>
     <div class="control-group">
-      <label>scan_speed:</label>
+      <label>scan_speed</label>
       <input type="number" id="scanSpeed" value="2" min="1" max="20" step="1">
     </div>
     <div class="control-group">
-      <label>top_threshold:</label>
+      <label>enable_scan</label>
+      <input type="checkbox" id="enableScan" checked>
+    </div>
+
+    <div class="separator"></div>
+
+    <div class="control-group">
+      <label>top_threshold</label>
       <input type="number" id="topThreshold" value="0.05" min="0" max="1" step="0.01">
     </div>
     <div class="control-group">
-      <label>middle_threshold:</label>
+      <label>middle_threshold</label>
       <input type="number" id="middleThreshold" value="0.30" min="0" max="1" step="0.01">
     </div>
     <div class="control-group">
-      <label>max_fall_distance:</label>
-      <input type="number" id="maxFall" value="400" min="50" max="1000" step="50">
+      <label>max_fall_distance</label>
+      <input type="number" id="maxFall" value="1200" min="50" max="2000" step="50">
     </div>
     <div class="control-group">
-      <label>upward_chance:</label>
+      <label>upward_chance</label>
       <input type="number" id="upwardChance" value="0.1" min="0" max="1" step="0.1">
     </div>
-    <div class="control-group">
-      <label>start_delay:</label>
-      <input type="number" id="startDelay" value="2" min="0" max="10" step="0.5">
+
+    <div class="bottom-controls">
+      <button id="exportBtn" onclick="exportImage()">export image</button>
     </div>
-    <div class="control-group">
-      <label>enable_scan:</label>
-      <input type="checkbox" id="enableScan" checked>
-    </div>
-    <button onclick="applyAndRefresh()">refresh</button>
-    <button onclick="startRecording()">record</button>
+  </div>
+
+  <!-- Fixed buttons that stay visible -->
+  <div class="fixed-buttons">
+    <button id="toggleControls" onclick="toggleControlsPanel()">hide</button>
+    <button onclick="location.reload()">refresh</button>
   </div>
 
   <!-- Your falling sand script -->
   <script src="fallingsand.js"></script>
 
   <script>
+    // Toggle controls panel
+    function toggleControlsPanel() {
+      const controls = document.getElementById('controls');
+      const toggleBtn = document.getElementById('toggleControls');
+      const body = document.body;
+
+      controls.classList.toggle('hidden');
+      toggleBtn.classList.toggle('controls-hidden');
+      body.classList.toggle('controls-hidden');
+
+      if (controls.classList.contains('hidden')) {
+        toggleBtn.textContent = 'show';
+        localStorage.setItem('controlsHidden', 'true');
+      } else {
+        toggleBtn.textContent = 'hide';
+        localStorage.setItem('controlsHidden', 'false');
+      }
+    }
+
     // Load saved values on page load
     window.addEventListener('DOMContentLoaded', function() {
       const saved = {
+        resolutionScale: localStorage.getItem('resolutionScale') || '3',
+        pixelBorder: localStorage.getItem('pixelBorder') || '0.75',
         simSpeed: localStorage.getItem('simSpeed') || '1',
         scanSpeed: localStorage.getItem('scanSpeed') || '2',
         topThreshold: localStorage.getItem('topThreshold') || '0.05',
         middleThreshold: localStorage.getItem('middleThreshold') || '0.30',
-        maxFall: localStorage.getItem('maxFall') || '400',
+        maxFall: localStorage.getItem('maxFall') || '1200',
         upwardChance: localStorage.getItem('upwardChance') || '0.1',
         startDelay: localStorage.getItem('startDelay') || '2',
-        enableScan: localStorage.getItem('enableScan') !== 'false'
+        enableScan: localStorage.getItem('enableScan') !== 'false',
+        uploadedImage: localStorage.getItem('uploadedImage'),
+        uploadedFilename: localStorage.getItem('uploadedFilename'),
+        controlsHidden: localStorage.getItem('controlsHidden') === 'true'
       };
 
+      // Restore menu hidden state
+      if (saved.controlsHidden) {
+        const controls = document.getElementById('controls');
+        const toggleBtn = document.getElementById('toggleControls');
+        const body = document.body;
+        controls.classList.add('hidden');
+        body.classList.add('controls-hidden');
+        toggleBtn.textContent = 'show';
+      }
+
+      document.getElementById('resolutionScale').value = saved.resolutionScale;
+      document.getElementById('pixelBorder').value = saved.pixelBorder;
       document.getElementById('simSpeed').value = saved.simSpeed;
       document.getElementById('scanSpeed').value = saved.scanSpeed;
       document.getElementById('topThreshold').value = saved.topThreshold;
@@ -138,55 +282,61 @@
       document.getElementById('startDelay').value = saved.startDelay;
       document.getElementById('enableScan').checked = saved.enableScan;
 
-      // Apply to config variables
-      SIMULATION_SPEED = parseInt(saved.simSpeed);
-      SCAN_SPEED = parseInt(saved.scanSpeed);
-      TOP_THRESHOLD = parseFloat(saved.topThreshold);
-      MIDDLE_THRESHOLD = parseFloat(saved.middleThreshold);
-      MAX_FALL_DISTANCE = parseInt(saved.maxFall);
-      UPWARD_CHANCE = parseFloat(saved.upwardChance);
-      START_DELAY = parseFloat(saved.startDelay) * 1000; // Convert to milliseconds
-      ENABLE_SCAN = saved.enableScan;
+      // Display filename if available
+      if (saved.uploadedFilename) {
+        const filenameDisplay = document.getElementById('filenameDisplay');
+        filenameDisplay.textContent = saved.uploadedFilename;
+        filenameDisplay.style.display = 'block';
+      }
+
+      // Handle image upload
+      document.getElementById('imageUpload').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            // Clear only image and cache, keep user settings
+            localStorage.removeItem('simulationCache');
+            localStorage.setItem('uploadedImage', event.target.result);
+            localStorage.setItem('uploadedFilename', file.name);
+            location.reload();
+          };
+          reader.readAsDataURL(file);
+        }
+      });
     });
 
-    function applyAndRefresh() {
-      // Save values to localStorage
-      localStorage.setItem('simSpeed', document.getElementById('simSpeed').value);
-      localStorage.setItem('scanSpeed', document.getElementById('scanSpeed').value);
-      localStorage.setItem('topThreshold', document.getElementById('topThreshold').value);
-      localStorage.setItem('middleThreshold', document.getElementById('middleThreshold').value);
-      localStorage.setItem('maxFall', document.getElementById('maxFall').value);
-      localStorage.setItem('upwardChance', document.getElementById('upwardChance').value);
-      localStorage.setItem('startDelay', document.getElementById('startDelay').value);
-      localStorage.setItem('enableScan', document.getElementById('enableScan').checked);
-
-      // Reload the page
-      location.reload();
-    }
-
-    function startRecording() {
-      if (!isRecording) {
-        if (!capturer) {
-          capturer = new CCapture({
-            format: 'webm',
-            framerate: 60,
-            quality: 100,
-            name: 'falling_sand_' + Date.now(),
-            verbose: true
-          });
-        }
-        capturer.start();
-        isRecording = true;
-        recordingFrames = 0;
-        maxRecordingFrames = RECORD_DURATION * 60;
-        console.log('Recording started...');
+    function exportImage() {
+      if (typeof exportHighResImage === 'function') {
+        exportHighResImage();
       } else {
-        capturer.stop();
-        capturer.save();
-        isRecording = false;
-        console.log('Recording stopped! Saving video...');
+        console.log('Export function not available yet');
       }
     }
+
+    // Enable replay button when cache is ready
+    function enableReplayButton() {
+      const replayBtn = document.getElementById('replayBtn');
+      if (replayBtn) {
+        replayBtn.disabled = false;
+      }
+    }
+
+    // Listen for control changes and save (no reload)
+    ['resolutionScale', 'pixelBorder', 'simSpeed', 'scanSpeed', 'topThreshold',
+     'middleThreshold', 'maxFall', 'upwardChance', 'enableScan'].forEach(id => {
+      const element = document.getElementById(id);
+      if (element) {
+        element.addEventListener('change', function() {
+          // Save to localStorage only (no reload)
+          if (element.type === 'checkbox') {
+            localStorage.setItem(id, element.checked);
+          } else {
+            localStorage.setItem(id, element.value);
+          }
+        });
+      }
+    });
   </script>
 </body>
 </html>

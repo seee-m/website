@@ -2,16 +2,17 @@
 // Based on cellular automata
 
 // ========== CONFIGURATION VARIABLES ==========
-let SIMULATION_SPEED = 1;        // Frames between physics updates (1 = every frame, higher = slower)
-let SCAN_SPEED = 2;              // Frames between scan line advances (higher = slower scan)
-let TOP_THRESHOLD = 0.05;        // Top 5% brightest pixels (fast/upward)
-let MIDDLE_THRESHOLD = 0.30;     // Top 30% brightest pixels (slow fall)
-let MAX_FALL_DISTANCE = 400;     // Maximum distance pixels can fall (in pixels)
-let UPWARD_CHANCE = 0.1;         // Chance for brightest pixels to fall upward (0-1)
-let START_DELAY = 2000;          // Delay before physics starts (in milliseconds)
-let ENABLE_SCAN = true;          // Enable scan line reveal effect
-let RECORD_VIDEO = false;        // Set to true to record video at 60fps
-let RECORD_DURATION = 10;        // Duration in seconds to record
+// Load from localStorage if available, otherwise use defaults
+let SIMULATION_SPEED = (typeof localStorage !== 'undefined' && localStorage.getItem('simSpeed')) ? parseInt(localStorage.getItem('simSpeed')) : 1;
+let SCAN_SPEED = (typeof localStorage !== 'undefined' && localStorage.getItem('scanSpeed')) ? parseInt(localStorage.getItem('scanSpeed')) : 2;
+let TOP_THRESHOLD = (typeof localStorage !== 'undefined' && localStorage.getItem('topThreshold')) ? parseFloat(localStorage.getItem('topThreshold')) : 0.05;
+let MIDDLE_THRESHOLD = (typeof localStorage !== 'undefined' && localStorage.getItem('middleThreshold')) ? parseFloat(localStorage.getItem('middleThreshold')) : 0.30;
+let MAX_FALL_DISTANCE = (typeof localStorage !== 'undefined' && localStorage.getItem('maxFall')) ? parseInt(localStorage.getItem('maxFall')) : 1200;
+let UPWARD_CHANCE = (typeof localStorage !== 'undefined' && localStorage.getItem('upwardChance')) ? parseFloat(localStorage.getItem('upwardChance')) : 0.1;
+let ENABLE_SCAN = (typeof localStorage !== 'undefined' && localStorage.getItem('enableScan')) ? localStorage.getItem('enableScan') !== 'false' : true;
+let RESOLUTION_SCALE = (typeof localStorage !== 'undefined' && localStorage.getItem('resolutionScale')) ? parseInt(localStorage.getItem('resolutionScale')) : 3;
+let PIXEL_BORDER_SIZE = (typeof localStorage !== 'undefined' && localStorage.getItem('pixelBorder')) ? parseFloat(localStorage.getItem('pixelBorder')) : 0.75;
+let UPLOADED_IMAGE_DATA = (typeof localStorage !== 'undefined' && localStorage.getItem('uploadedImage')) || 'start.jpg';
 // =============================================
 
 let grid;
@@ -26,94 +27,78 @@ let fallDistances = [];
 let fallDistancesBuffer = [];
 let scanLine = 0;
 let frameCounter = 0;
-let imageFiles = [
-  'images/castle.jpg',
-  'images/space.jpg',
-  'images/car.jpg',
-  'images/flowers.jpg',
-  'images/police.jpg',
-  'images/wall.jpg',
-  'images/computer.jpg',
-  'images/accidental-running-picture.jpg',
-  'images/bags-of-clothes.jpg',
-  'images/broken-bumper.jpg',
-  'images/canada-from-30-thousand-feet.jpg',
-  'images/car-in-kensington.jpg',
-  'images/car-scrape-and-scarf.jpg',
-  'images/children-on-bouncy-castle.jpg',
-  'images/closed-foot-cart-basel.jpg',
-  'images/dirt-in-the-garden.jpg',
-  'images/dust-sheet-on-car.jpg',
-  'images/earth.jpg',
-  'images/fucked-up-led-display.jpg',
-  'images/garden-state-cutting-company.jpg',
-  'images/heraklion-fishing-nets.jpg',
-  'images/italian-restaurant.jpg',
-  'images/miami-toaway-zone.jpg',
-  'images/muga-silkworms.jpg',
-  'images/newports-and-the-wonberbread-car.jpg',
-  'images/nonononononono.jpg',
-  'images/particle-research.jpg',
-  'images/pontiac-with-attitude.jpg',
-  'images/rocks-containing-aluminium.jpg',
-  'images/shrine-to-mary-in-naples.jpg',
-  'images/smashed-car-in-doral-miami.jpg',
-  'images/tony-hawks-pro-grouter.jpg',
-  'images/university-avenue-tulips.jpg',
-  'images/us-navy-outfit.jpg',
-  'images/uv-cactus-queens-park.jpg',
-  'images/uv-leaves-queens-park.jpg',
-  'images/window-box.jpg'
-];
 
-// Video recording variables
-let capturer;
-let isRecording = false;
-let recordingFrames = 0;
-let maxRecordingFrames = 0;
+// Cache for replay
+let simulationCache = [];
+let isReplaying = false;
+let replayFrame = 0;
+let isCaching = true;
+let cacheReady = false;
 
 function preload() {
-  // Pick a random image from the images folder
-  let randomIndex = floor(random(imageFiles.length));
-  let selectedImage = imageFiles[randomIndex];
+  // Use uploaded image if available, otherwise use a default
+  if (UPLOADED_IMAGE_DATA) {
+    console.log('Loading uploaded image');
+    img = loadImage(UPLOADED_IMAGE_DATA,
+      () => console.log('Uploaded image loaded successfully'),
+      () => {
+        console.log('Failed to load uploaded image');
+        img = createDefaultImage();
+      }
+    );
+  } else {
+    console.log('No uploaded image, creating default');
+    img = createDefaultImage();
+  }
+}
 
-  console.log('Loading image:', selectedImage);
-  img = loadImage(selectedImage,
-    () => console.log('Image loaded successfully'),
-    () => {
-      console.log('Failed to load', selectedImage, '- falling back to testimage.jpg');
-      img = loadImage('testimage.jpg');
+function createDefaultImage() {
+  // Create a simple gradient image as default
+  let defaultImg = createImage(400, 300);
+  defaultImg.loadPixels();
+  for (let y = 0; y < defaultImg.height; y++) {
+    for (let x = 0; x < defaultImg.width; x++) {
+      let index = (y * defaultImg.width + x) * 4;
+      let brightness = map(y, 0, defaultImg.height, 255, 0);
+      defaultImg.pixels[index] = brightness;
+      defaultImg.pixels[index + 1] = brightness;
+      defaultImg.pixels[index + 2] = brightness;
+      defaultImg.pixels[index + 3] = 255;
     }
-  );
+  }
+  defaultImg.updatePixels();
+  return defaultImg;
 }
 
 function setup() {
-  createCanvas(800, 600); // Canvas 2D is more stable for this use case
-  frameRate(60); // Lock to 60fps for smooth recording
+  // Calculate target dimensions based on image aspect ratio
+  // Max 2400 on longest side, then apply resolution scale
+  let maxDimension = 2400 / pow(2, RESOLUTION_SCALE - 1);
+  let imgAspect = img.width / img.height;
 
-  // Initialize video recorder if enabled
-  if (RECORD_VIDEO && typeof CCapture !== 'undefined') {
-    capturer = new CCapture({
-      format: 'webm',
-      framerate: 60,
-      quality: 100,
-      name: 'falling_sand_' + Date.now(),
-      verbose: true
-    });
-    maxRecordingFrames = RECORD_DURATION * 60; // 60fps
-    console.log('Video recording enabled. Recording will start automatically.');
+  let targetWidth, targetHeight;
+  if (img.width > img.height) {
+    targetWidth = maxDimension;
+    targetHeight = maxDimension / imgAspect;
+  } else {
+    targetHeight = maxDimension;
+    targetWidth = maxDimension * imgAspect;
   }
 
-  // Calculate grid dimensions first
-  cols = floor(width / cellSize);
-  rows = floor(height / cellSize);
+  // Calculate grid dimensions (this is the FINAL size we need)
+  cols = floor(targetWidth / cellSize);
+  rows = floor(targetHeight / cellSize);
 
-  // 1. Resize image to grid size
+  // 1. Resize image to EXACT grid size (only once, to final size)
   img.resize(cols, rows);
   img.loadPixels();
 
-  // 2. Apply 4-bit color Bayer dithering
+  // 2. Apply 4-bit color Bayer dithering AFTER resizing
   applyBayerDither();
+
+  // Create canvas based on grid dimensions
+  createCanvas(cols * cellSize, rows * cellSize);
+  frameRate(60);
 
   // Initialize grid and fall distances tracker with buffers
   grid = make2DArray(cols, rows);
@@ -171,7 +156,9 @@ function setup() {
         brightness: item.brightness,
         canFall: canFall,
         fallCategory: fallCategory,
-        revealed: false
+        revealed: false,
+        dormant: false,  // Track if pixel has stopped moving
+        dormantFrames: 0 // Frames since last movement
       };
       fallDistances[item.i][item.j] = 0;
     }
@@ -227,29 +214,50 @@ function applyBayerDither() {
 }
 
 function draw() {
-  background(20);
+  background(0);
 
-  // Start recording when physics starts
+  // Handle replay mode
+  if (isReplaying) {
+    if (replayFrame < simulationCache.length) {
+      renderFromCache(simulationCache[replayFrame]);
+      replayFrame++;
+    } else {
+      // Loop replay
+      replayFrame = 0;
+    }
+    return;
+  }
+
+  // Start physics immediately
   if (!physicsStarted && millis() - startTime >= 0) {
     physicsStarted = true;
 
-    // Start video capture when physics begins
-    if (RECORD_VIDEO && capturer && !isRecording) {
-      capturer.start();
-      isRecording = true;
-      console.log('Recording started...');
+    // If scan is disabled, reveal all pixels at once
+    if (!ENABLE_SCAN) {
+      for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < rows; j++) {
+          if (grid[i][j] !== null) {
+            grid[i][j].revealed = true;
+            // Kick off falling for bright pixels by setting initial fall distance
+            if (grid[i][j].canFall && fallDistances[i][j] === 0) {
+              fallDistances[i][j] = 1;
+            }
+          }
+        }
+      }
+      scanLine = rows; // Set scan line to end
     }
   }
 
   // Progress scan line - slower than physics so pixels can outpace it
-  if (physicsStarted && frameCounter % SCAN_SPEED === 0) {
+  if (physicsStarted && ENABLE_SCAN && frameCounter % SCAN_SPEED === 0) {
     if (scanLine < rows) {
       scanLine += 1; // Advance one row
     }
   }
 
-  // Reveal pixels up to current scan line (do this every frame)
-  if (physicsStarted) {
+  // Reveal pixels up to current scan line (do this every frame, only if scan enabled)
+  if (physicsStarted && ENABLE_SCAN) {
     let maxScanRow = min(floor(scanLine), rows);
     for (let i = 0; i < cols; i++) {
       for (let j = 0; j < maxScanRow; j++) {
@@ -295,6 +303,13 @@ function draw() {
     for (let i = 0; i < cols; i++) {
       for (let j = rows - 1; j >= 0; j--) {
         let particle = grid[i][j];
+
+        // Skip dormant particles (performance optimization)
+        if (particle !== null && particle.dormant) {
+          gridBuffer[i][j] = particle;
+          fallDistancesBuffer[i][j] = fallDistances[i][j];
+          continue;
+        }
 
         // Allow bright pixels to fall even if not revealed (so they can outpace scan)
         if (particle !== null && particle.canFall && (particle.revealed || fallDistances[i][j] > 0)) {
@@ -401,10 +416,22 @@ function draw() {
           if (!fell) {
             // Only place if nothing already there
             if (gridBuffer[i][j] === null) {
+              // Increment dormant counter if particle didn't move
+              particle.dormantFrames++;
+
+              // Mark as dormant after 30 frames without movement
+              if (particle.dormantFrames > 30) {
+                particle.dormant = true;
+              }
+
               gridBuffer[i][j] = particle;
               fallDistancesBuffer[i][j] = currentFallDistance;
             }
           } else {
+            // Reset dormant counter if particle moved
+            particle.dormantFrames = 0;
+            particle.dormant = false;
+
             // Particle fell, clear the original position if nothing was placed there
             if (gridBuffer[i][j] === particle) {
               // This shouldn't happen, but just in case
@@ -424,10 +451,15 @@ function draw() {
     fallDistancesBuffer = tempFall;
   }
 
+  // Cache current frame if caching is enabled
+  if (isCaching && physicsStarted) {
+    cacheCurrentFrame();
+  }
+
   // Render - show revealed pixels OR falling bright pixels (even beyond scan line)
   noStroke();
-  let pixelDrawSize = cellSize * 0.75; // 75% size to create border
-  let offset = cellSize * 0.125; // Center the smaller pixel
+  let pixelDrawSize = cellSize * PIXEL_BORDER_SIZE;
+  let offset = cellSize * (1 - PIXEL_BORDER_SIZE) / 2; // Center the smaller pixel
 
   for (let i = 0; i < cols; i++) {
     for (let j = 0; j < rows; j++) {
@@ -449,17 +481,11 @@ function draw() {
     }
   }
 
-  // Handle video recording
-  if (isRecording && capturer) {
-    capturer.capture(document.querySelector('canvas'));
-    recordingFrames++;
-
-    // Stop recording after specified duration
-    if (recordingFrames >= maxRecordingFrames) {
-      capturer.stop();
-      capturer.save();
-      isRecording = false;
-      console.log('Recording complete! Saving video...');
+  // Enable replay button when cache has content
+  if (!cacheReady && simulationCache.length > 60) {
+    cacheReady = true;
+    if (typeof enableReplayButton === 'function') {
+      enableReplayButton();
     }
   }
 }
@@ -472,32 +498,108 @@ function make2DArray(cols, rows) {
   return arr;
 }
 
-// Key press to manually start/stop recording
-function keyPressed() {
-  if (key === 'r' || key === 'R') {
-    if (!isRecording && capturer) {
-      // Start recording
-      if (!capturer) {
-        capturer = new CCapture({
-          format: 'webm',
-          framerate: 60,
-          quality: 100,
-          name: 'falling_sand_' + Date.now(),
-          verbose: true
-        });
+// Export current frame as high resolution PNG (4x scale, nearest neighbor)
+function exportHighResImage() {
+  // Create a high-res graphics buffer (4x scale)
+  let scale = 4;
+  let exportWidth = cols * cellSize * scale;
+  let exportHeight = rows * cellSize * scale;
+
+  let pg = createGraphics(exportWidth, exportHeight);
+  pg.noSmooth(); // Nearest neighbor scaling
+  pg.noStroke();
+
+  let pixelDrawSize = cellSize * PIXEL_BORDER_SIZE * scale;
+  let offset = cellSize * (1 - PIXEL_BORDER_SIZE) / 2 * scale;
+  let scaledCellSize = cellSize * scale;
+
+  pg.background(0);
+
+  // Render current state at 4x resolution
+  for (let i = 0; i < cols; i++) {
+    for (let j = 0; j < rows; j++) {
+      let particle = grid[i][j];
+      if (particle !== null) {
+        let shouldShow = particle.revealed || (particle.canFall && fallDistances[i][j] > 0);
+
+        if (shouldShow) {
+          let c = particle.color;
+          let r = (c >> 16) & 0xFF;
+          let g = (c >> 8) & 0xFF;
+          let b = c & 0xFF;
+          pg.fill(r, g, b);
+          pg.rect(i * scaledCellSize + offset, j * scaledCellSize + offset, pixelDrawSize, pixelDrawSize);
+        }
       }
-      capturer.start();
-      isRecording = true;
-      recordingFrames = 0;
-      maxRecordingFrames = RECORD_DURATION * 60;
-      console.log('Recording started (press R again to stop)');
-    } else if (isRecording) {
-      // Stop recording
-      capturer.stop();
-      capturer.save();
-      isRecording = false;
-      console.log('Recording stopped! Saving video...');
     }
   }
+
+  // Save as PNG
+  save(pg, 'falling_sand_' + Date.now() + '.png');
+  console.log('Image exported at ' + exportWidth + 'x' + exportHeight);
+}
+
+// Cache current frame for replay
+function cacheCurrentFrame() {
+  let frameData = [];
+  for (let i = 0; i < cols; i++) {
+    for (let j = 0; j < rows; j++) {
+      let particle = grid[i][j];
+      if (particle !== null) {
+        let shouldShow = particle.revealed || (particle.canFall && fallDistances[i][j] > 0);
+        if (shouldShow) {
+          frameData.push({
+            i: i,
+            j: j,
+            color: particle.color
+          });
+        }
+      }
+    }
+  }
+  simulationCache.push(frameData);
+}
+
+// Render from cached frame data
+function renderFromCache(frameData) {
+  background(0);
+  noStroke();
+  let pixelDrawSize = cellSize * PIXEL_BORDER_SIZE;
+  let offset = cellSize * (1 - PIXEL_BORDER_SIZE) / 2;
+
+  for (let pixel of frameData) {
+    let c = pixel.color;
+    let r = (c >> 16) & 0xFF;
+    let g = (c >> 8) & 0xFF;
+    let b = c & 0xFF;
+    fill(r, g, b);
+    rect(pixel.i * cellSize + offset, pixel.j * cellSize + offset, pixelDrawSize, pixelDrawSize);
+  }
+}
+
+// Toggle replay mode
+function toggleReplay() {
+  if (simulationCache.length === 0) {
+    console.log('No cached simulation to replay');
+    return;
+  }
+  isReplaying = !isReplaying;
+  if (isReplaying) {
+    replayFrame = 0;
+    isCaching = false;
+    console.log('Replay started');
+  } else {
+    isCaching = true;
+    console.log('Replay stopped');
+  }
+}
+
+// Reset simulation
+function resetSimulation() {
+  simulationCache = [];
+  isReplaying = false;
+  replayFrame = 0;
+  isCaching = true;
+  location.reload();
 }
 
