@@ -34,6 +34,10 @@
                     <img src="${getBasePath()}media/logos/d-music.svg" alt="Music" />
                 </a>
 
+                 <a href="${getBasePath()}pages/moire/moire.html" class="directory-box">
+                    <img src="${getBasePath()}media/logos/d-moire.svg" alt="Moire" />
+                </a>
+
                 <a href="${getBasePath()}pages/info/info.html" class="directory-box">
                     <img src="${getBasePath()}media/logos/d-info.svg" alt="Info" />
                 </a>
@@ -41,6 +45,8 @@
                 <a href="${getBasePath()}pages/wisdom/wisdom.html" class="directory-box">
                     <img src="${getBasePath()}media/logos/d-wisdom.svg" alt="Wisdom" />
                 </a>
+
+               
             </div>
         `;
 

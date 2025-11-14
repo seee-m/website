@@ -1,0 +1,88 @@
+/* =========================
+   MOIRE PAGE STYLES
+   ========================= */
+
+/* Base - Page-specific background */
+body {
+    margin: 0;
+    overflow: hidden;
+}
+
+/* Gradient Canvas Background */
+#gradient-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+}
+
+/* Moire Container */
+#moire-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+#moire-container canvas {
+    display: block;
+}
+
+/* Ensure header is above canvas */
+.header {
+    position: relative;
+    z-index: 10;
+}
+
+/* Directory Modal Theme - Moire page (green background, red items with white hover) */
+:root {
+    --directory-bg: #008000;
+    --directory-hover-filter: invert(17%) sepia(100%) saturate(7426%) hue-rotate(0deg) brightness(106%) contrast(115%);
+    --directory-default-filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
+}
+
+/* Box Components - Moire theme (green/white) */
+
+.title-box {
+    background: #008000;
+    color: #d7d7d7;
+    border: 1px solid #008000;
+}
+
+.controls-box {
+    background: #d7d7d7;
+    border: 1px solid #008000;
+    border-top: none;
+    gap: 10px;
+}
+
+/* Text Colors - Moire theme */
+.title,
+.home-link {
+    color: #d7d7d7;
+}
+
+.home-link:hover {
+    opacity: 0.5;
+}
+
+/* SVG Logo - Moire theme (white) */
+.svg-logo {
+    max-width: 120px;
+    height: auto;
+    fill: #d7d7d7;
+}
+
+.nav-link {
+    color: #008000;
+}
+
+.nav-link:hover {
+    opacity: 0.5;
+}

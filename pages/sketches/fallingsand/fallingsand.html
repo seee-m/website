@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Falling Sand Simulation</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background-color: #000000;
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: 'Courier New', monospace;
+      color: #959595;
+    }
+    canvas {
+      width: 80vw !important;
+      height: auto !important;
+      margin-bottom: 10px;
+    }
+    #controls {
+      margin-bottom: 20px;
+      padding-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      max-width: 80vw;
+      justify-content: center;
+      align-items: center;
+    }
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    label {
+      font-size: 12px;
+      color: #959595;
+    }
+    input[type="number"] {
+      width: 60px;
+      background: #000;
+      border: 1px solid #333;
+      color: #959595;
+      padding: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+    button {
+      background: #000;
+      border: 1px solid #333;
+      color: #959595;
+      padding: 6px 12px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    button:hover {
+      border-color: #555;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <!-- p5.js library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+
+  <!-- CCapture.js for video recording -->
+  <script src="https://cdn.jsdelivr.net/npm/ccapture.js@1.1.0/build/CCapture.all.min.js"></script>
+
+  <!-- Controls -->
+  <div id="controls">
+    <div class="control-group">
+      <label>sim_speed:</label>
+      <input type="number" id="simSpeed" value="1" min="1" max="10" step="1">
+    </div>
+    <div class="control-group">
+      <label>scan_speed:</label>
+      <input type="number" id="scanSpeed" value="2" min="1" max="20" step="1">
+    </div>
+    <div class="control-group">
+      <label>top_threshold:</label>
+      <input type="number" id="topThreshold" value="0.05" min="0" max="1" step="0.01">
+    </div>
+    <div class="control-group">
+      <label>middle_threshold:</label>
+      <input type="number" id="middleThreshold" value="0.30" min="0" max="1" step="0.01">
+    </div>
+    <div class="control-group">
+      <label>max_fall_distance:</label>
+      <input type="number" id="maxFall" value="400" min="50" max="1000" step="50">
+    </div>
+    <div class="control-group">
+      <label>upward_chance:</label>
+      <input type="number" id="upwardChance" value="0.1" min="0" max="1" step="0.1">
+    </div>
+    <div class="control-group">
+      <label>start_delay:</label>
+      <input type="number" id="startDelay" value="2" min="0" max="10" step="0.5">
+    </div>
+    <div class="control-group">
+      <label>enable_scan:</label>
+      <input type="checkbox" id="enableScan" checked>
+    </div>
+    <button onclick="applyAndRefresh()">refresh</button>
+    <button onclick="startRecording()">record</button>
+  </div>
+
+  <!-- Your falling sand script -->
+  <script src="fallingsand.js"></script>
+
+  <script>
+    // Load saved values on page load
+    window.addEventListener('DOMContentLoaded', function() {
+      const saved = {
+        simSpeed: localStorage.getItem('simSpeed') || '1',
+        scanSpeed: localStorage.getItem('scanSpeed') || '2',
+        topThreshold: localStorage.getItem('topThreshold') || '0.05',
+        middleThreshold: localStorage.getItem('middleThreshold') || '0.30',
+        maxFall: localStorage.getItem('maxFall') || '400',
+        upwardChance: localStorage.getItem('upwardChance') || '0.1',
+        startDelay: localStorage.getItem('startDelay') || '2',
+        enableScan: localStorage.getItem('enableScan') !== 'false'
+      };
+
+      document.getElementById('simSpeed').value = saved.simSpeed;
+      document.getElementById('scanSpeed').value = saved.scanSpeed;
+      document.getElementById('topThreshold').value = saved.topThreshold;
+      document.getElementById('middleThreshold').value = saved.middleThreshold;
+      document.getElementById('maxFall').value = saved.maxFall;
+      document.getElementById('upwardChance').value = saved.upwardChance;
+      document.getElementById('startDelay').value = saved.startDelay;
+      document.getElementById('enableScan').checked = saved.enableScan;
+
+      // Apply to config variables
+      SIMULATION_SPEED = parseInt(saved.simSpeed);
+      SCAN_SPEED = parseInt(saved.scanSpeed);
+      TOP_THRESHOLD = parseFloat(saved.topThreshold);
+      MIDDLE_THRESHOLD = parseFloat(saved.middleThreshold);
+      MAX_FALL_DISTANCE = parseInt(saved.maxFall);
+      UPWARD_CHANCE = parseFloat(saved.upwardChance);
+      START_DELAY = parseFloat(saved.startDelay) * 1000; // Convert to milliseconds
+      ENABLE_SCAN = saved.enableScan;
+    });
+
+    function applyAndRefresh() {
+      // Save values to localStorage
+      localStorage.setItem('simSpeed', document.getElementById('simSpeed').value);
+      localStorage.setItem('scanSpeed', document.getElementById('scanSpeed').value);
+      localStorage.setItem('topThreshold', document.getElementById('topThreshold').value);
+      localStorage.setItem('middleThreshold', document.getElementById('middleThreshold').value);
+      localStorage.setItem('maxFall', document.getElementById('maxFall').value);
+      localStorage.setItem('upwardChance', document.getElementById('upwardChance').value);
+      localStorage.setItem('startDelay', document.getElementById('startDelay').value);
+      localStorage.setItem('enableScan', document.getElementById('enableScan').checked);
+
+      // Reload the page
+      location.reload();
+    }
+
+    function startRecording() {
+      if (!isRecording) {
+        if (!capturer) {
+          capturer = new CCapture({
+            format: 'webm',
+            framerate: 60,
+            quality: 100,
+            name: 'falling_sand_' + Date.now(),
+            verbose: true
+          });
+        }
+        capturer.start();
+        isRecording = true;
+        recordingFrames = 0;
+        maxRecordingFrames = RECORD_DURATION * 60;
+        console.log('Recording started...');
+      } else {
+        capturer.stop();
+        capturer.save();
+        isRecording = false;
+        console.log('Recording stopped! Saving video...');
+      }
+    }
+  </script>
+</body>
+</html>
