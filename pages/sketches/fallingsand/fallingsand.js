@@ -12,7 +12,7 @@ let UPWARD_CHANCE = (typeof localStorage !== 'undefined' && localStorage.getItem
 let ENABLE_SCAN = (typeof localStorage !== 'undefined' && localStorage.getItem('enableScan')) ? localStorage.getItem('enableScan') !== 'false' : true;
 let RESOLUTION_SCALE = (typeof localStorage !== 'undefined' && localStorage.getItem('resolutionScale')) ? parseInt(localStorage.getItem('resolutionScale')) : 3;
 let PIXEL_BORDER_SIZE = (typeof localStorage !== 'undefined' && localStorage.getItem('pixelBorder')) ? parseFloat(localStorage.getItem('pixelBorder')) : 0.75;
-let UPLOADED_IMAGE_DATA = (typeof localStorage !== 'undefined' && localStorage.getItem('uploadedImage')) || 'start.jpg';
+let UPLOADED_IMAGE_DATA = (typeof localStorage !== 'undefined' && localStorage.getItem('uploadedImage')) || null;
 // =============================================
 
 let grid;
@@ -37,12 +37,12 @@ let cacheReady = false;
 
 function preload() {
   // Use uploaded image if available, otherwise use a default
-  if (UPLOADED_IMAGE_DATA) {
+  if (UPLOADED_IMAGE_DATA && UPLOADED_IMAGE_DATA.trim() !== '') {
     console.log('Loading uploaded image');
     img = loadImage(UPLOADED_IMAGE_DATA,
       () => console.log('Uploaded image loaded successfully'),
       () => {
-        console.log('Failed to load uploaded image');
+        console.log('Failed to load uploaded image, using default');
         img = createDefaultImage();
       }
     );
@@ -603,3 +603,29 @@ function resetSimulation() {
   location.reload();
 }
 
+// Reset to defaults (clears image and all settings)
+function resetToDefaults() {
+  if (typeof localStorage !== 'undefined') {
+    // Clear all settings
+    localStorage.removeItem('simSpeed');
+    localStorage.removeItem('scanSpeed');
+    localStorage.removeItem('topThreshold');
+    localStorage.removeItem('middleThreshold');
+    localStorage.removeItem('maxFall');
+    localStorage.removeItem('upwardChance');
+    localStorage.removeItem('enableScan');
+    localStorage.removeItem('resolutionScale');
+    localStorage.removeItem('pixelBorder');
+    localStorage.removeItem('uploadedImage');
+  }
+  location.reload();
+}
+
+// Handle image upload (only updates image, preserves settings)
+function handleImageUpload(imageData) {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('uploadedImage', imageData);
+  }
+  // Reload to restart simulation with new image
+  location.reload();
+}

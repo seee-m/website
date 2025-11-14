@@ -211,13 +211,14 @@
 
     <div class="bottom-controls">
       <button id="exportBtn" onclick="exportImage()">export image</button>
+      <button id="resetBtn" onclick="resetToDefaults()">reset to defaults</button>
     </div>
   </div>
 
   <!-- Fixed buttons that stay visible -->
   <div class="fixed-buttons">
     <button id="toggleControls" onclick="toggleControlsPanel()">hide</button>
-    <button onclick="location.reload()">refresh</button>
+    <button onclick="resetSimulation()">restart sim</button>
   </div>
 
   <!-- Your falling sand script -->
@@ -254,7 +255,6 @@
         middleThreshold: localStorage.getItem('middleThreshold') || '0.30',
         maxFall: localStorage.getItem('maxFall') || '1200',
         upwardChance: localStorage.getItem('upwardChance') || '0.1',
-        startDelay: localStorage.getItem('startDelay') || '2',
         enableScan: localStorage.getItem('enableScan') !== 'false',
         uploadedImage: localStorage.getItem('uploadedImage'),
         uploadedFilename: localStorage.getItem('uploadedFilename'),
@@ -279,7 +279,6 @@
       document.getElementById('middleThreshold').value = saved.middleThreshold;
       document.getElementById('maxFall').value = saved.maxFall;
       document.getElementById('upwardChance').value = saved.upwardChance;
-      document.getElementById('startDelay').value = saved.startDelay;
       document.getElementById('enableScan').checked = saved.enableScan;
 
       // Display filename if available
@@ -295,11 +294,15 @@
         if (file) {
           const reader = new FileReader();
           reader.onload = function(event) {
-            // Clear only image and cache, keep user settings
-            localStorage.removeItem('simulationCache');
-            localStorage.setItem('uploadedImage', event.target.result);
+            // Save image and filename, then call handleImageUpload from fallingsand.js
             localStorage.setItem('uploadedFilename', file.name);
-            location.reload();
+            if (typeof handleImageUpload === 'function') {
+              handleImageUpload(event.target.result);
+            } else {
+              // Fallback if function not loaded yet
+              localStorage.setItem('uploadedImage', event.target.result);
+              location.reload();
+            }
           };
           reader.readAsDataURL(file);
         }
