@@ -84,6 +84,12 @@
       margin-top: 2px;
       word-break: break-all;
     }
+    .status-display {
+      font-size: 11px;
+      color: #666;
+      margin-top: 2px;
+      min-height: 16px;
+    }
     input[type="number"] {
       width: 100%;
       box-sizing: border-box;
@@ -158,6 +164,8 @@
 <body>
   <!-- p5.js library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  <!-- GIF.js library for export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
 
   <!-- Controls -->
   <div id="controls">
@@ -170,8 +178,12 @@
     <div class="separator"></div>
 
     <div class="control-group">
-      <label>resolution_scale</label>
-      <input type="number" id="resolutionScale" value="3" min="1" max="10" step="1">
+      <label>resolution</label>
+      <select id="resolutionScale">
+        <option value="1">high res (1400px)</option>
+        <option value="2">medium res (1000px)</option>
+        <option value="3" selected>low res (800px)</option>
+      </select>
     </div>
     <div class="control-group">
       <label>pixel_border</label>
@@ -211,6 +223,8 @@
 
     <div class="bottom-controls">
       <button id="exportBtn" onclick="exportImage()">export image</button>
+      <button id="exportGifBtn" onclick="exportGIF()">export gif</button>
+      <div class="status-display" id="gifStatus"></div>
       <button id="resetBtn" onclick="resetToDefaults()">reset to defaults</button>
     </div>
   </div>
@@ -221,8 +235,592 @@
     <button onclick="resetSimulation()">restart sim</button>
   </div>
 
-  <!-- Your falling sand script -->
-  <script src="fallingsand.js"></script>
+  <!-- Falling sand script -->
+  <script>
+    // ========== CONFIGURATION VARIABLES ==========
+    let SIMULATION_SPEED = (typeof localStorage !== 'undefined' && localStorage.getItem('simSpeed')) ? parseInt(localStorage.getItem('simSpeed')) : 1;
+    let SCAN_SPEED = (typeof localStorage !== 'undefined' && localStorage.getItem('scanSpeed')) ? parseInt(localStorage.getItem('scanSpeed')) : 2;
+    let TOP_THRESHOLD = (typeof localStorage !== 'undefined' && localStorage.getItem('topThreshold')) ? parseFloat(localStorage.getItem('topThreshold')) : 0.05;
+    let MIDDLE_THRESHOLD = (typeof localStorage !== 'undefined' && localStorage.getItem('middleThreshold')) ? parseFloat(localStorage.getItem('middleThreshold')) : 0.30;
+    let MAX_FALL_DISTANCE = (typeof localStorage !== 'undefined' && localStorage.getItem('maxFall')) ? parseInt(localStorage.getItem('maxFall')) : 1200;
+    let UPWARD_CHANCE = (typeof localStorage !== 'undefined' && localStorage.getItem('upwardChance')) ? parseFloat(localStorage.getItem('upwardChance')) : 0.1;
+    let ENABLE_SCAN = (typeof localStorage !== 'undefined' && localStorage.getItem('enableScan')) ? localStorage.getItem('enableScan') !== 'false' : true;
+    let RESOLUTION_SCALE = (typeof localStorage !== 'undefined' && localStorage.getItem('resolutionScale')) ? parseInt(localStorage.getItem('resolutionScale')) : 3;
+    let PIXEL_BORDER_SIZE = (typeof localStorage !== 'undefined' && localStorage.getItem('pixelBorder')) ? parseFloat(localStorage.getItem('pixelBorder')) : 0.75;
+    let UPLOADED_IMAGE_DATA = (typeof localStorage !== 'undefined' && localStorage.getItem('uploadedImage')) || null;
+
+    let grid;
+    let gridBuffer;
+    let cols, rows;
+    let cellSize = 4;
+    let img;
+    let startTime;
+    let physicsStarted = false;
+    let fallDistances = [];
+    let fallDistancesBuffer = [];
+    let scanLine = 0;
+    let frameCounter = 0;
+
+    // Cache for GIF export
+    let simulationCache = [];
+    let isCaching = true;
+
+    function preload() {
+      if (UPLOADED_IMAGE_DATA && UPLOADED_IMAGE_DATA.trim() !== '') {
+        console.log('Loading uploaded image');
+        img = loadImage(UPLOADED_IMAGE_DATA,
+          () => console.log('Uploaded image loaded successfully'),
+          () => {
+            console.log('Failed to load uploaded image, using default');
+            img = createDefaultImage();
+          }
+        );
+      } else {
+        console.log('No uploaded image, creating default');
+        img = createDefaultImage();
+      }
+    }
+
+    function createDefaultImage() {
+      let defaultImg = createImage(400, 300);
+      defaultImg.loadPixels();
+      for (let y = 0; y < defaultImg.height; y++) {
+        for (let x = 0; x < defaultImg.width; x++) {
+          let index = (y * defaultImg.width + x) * 4;
+          let brightness = map(y, 0, defaultImg.height, 255, 0);
+          defaultImg.pixels[index] = brightness;
+          defaultImg.pixels[index + 1] = brightness;
+          defaultImg.pixels[index + 2] = brightness;
+          defaultImg.pixels[index + 3] = 255;
+        }
+      }
+      defaultImg.updatePixels();
+      return defaultImg;
+    }
+
+    function setup() {
+      // Resolution scale: 1 = 1600px, 2 = 800px, 3 = 400px
+      let maxDimension;
+      if (RESOLUTION_SCALE === 1) {
+        maxDimension = 1400;
+      } else if (RESOLUTION_SCALE === 2) {
+        maxDimension = 1000;
+      } else {
+        maxDimension = 800;
+      }
+      
+      let imgAspect = img.width / img.height;
+
+      let targetWidth, targetHeight;
+      if (img.width > img.height) {
+        targetWidth = maxDimension;
+        targetHeight = maxDimension / imgAspect;
+      } else {
+        targetHeight = maxDimension;
+        targetWidth = maxDimension * imgAspect;
+      }
+
+      cols = floor(targetWidth / cellSize);
+      rows = floor(targetHeight / cellSize);
+
+      // Apply dithering FIRST on original resolution (better quality)
+      img.loadPixels();
+      applyBayerDither();
+      
+      // THEN resize to final grid size (single operation)
+      img.resize(cols, rows);
+      img.loadPixels();
+
+      createCanvas(cols * cellSize, rows * cellSize);
+      frameRate(60);
+
+      grid = make2DArray(cols, rows);
+      gridBuffer = make2DArray(cols, rows);
+      fallDistances = make2DArray(cols, rows);
+      fallDistancesBuffer = make2DArray(cols, rows);
+
+      let brightnesses = [];
+      for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < rows; j++) {
+          let index = (j * img.width + i) * 4;
+          let r = img.pixels[index];
+          let g = img.pixels[index + 1];
+          let b = img.pixels[index + 2];
+
+          let brightness = (r + g + b) / 3;
+          brightnesses.push({brightness: brightness, i: i, j: j, r: r, g: g, b: b});
+        }
+      }
+
+      let sortedBrightness = [...brightnesses].map(b => b.brightness).sort((a, b) => b - a);
+      let threshold95 = sortedBrightness[floor(sortedBrightness.length * TOP_THRESHOLD)];
+      let threshold90 = sortedBrightness[floor(sortedBrightness.length * MIDDLE_THRESHOLD)];
+
+      for (let item of brightnesses) {
+        let fallCategory = 0;
+        let canFall = false;
+
+        if (item.brightness >= threshold95) {
+          canFall = true;
+          if (random(1) < UPWARD_CHANCE) {
+            fallCategory = 3;
+          } else {
+            fallCategory = 2;
+          }
+        } else if (item.brightness >= threshold90) {
+          canFall = true;
+          fallCategory = 1;
+        }
+
+        if (item.r !== undefined && item.g !== undefined && item.b !== undefined) {
+          let packedColor = (item.r << 16) | (item.g << 8) | item.b;
+
+          grid[item.i][item.j] = {
+            density: map(item.brightness, 0, 255, 1, 0),
+            color: packedColor,
+            brightness: item.brightness,
+            canFall: canFall,
+            fallCategory: fallCategory,
+            revealed: false,
+            dormant: false,
+            dormantFrames: 0
+          };
+          fallDistances[item.i][item.j] = 0;
+        }
+      }
+
+      startTime = millis();
+    }
+
+    function applyBayerDither() {
+      let bayerMatrix = [
+        [0, 8, 2, 10],
+        [12, 4, 14, 6],
+        [3, 11, 1, 9],
+        [15, 7, 13, 5]
+      ];
+
+      let levels = 16;
+
+      for (let y = 0; y < img.height; y++) {
+        for (let x = 0; x < img.width; x++) {
+          let index = (y * img.width + x) * 4;
+
+          let bayerValue = bayerMatrix[y % 4][x % 4];
+          let threshold = (bayerValue / 16.0) - 0.5;
+
+          for (let c = 0; c < 3; c++) {
+            let oldPixel = img.pixels[index + c];
+            let normalized = oldPixel / 255.0;
+
+            normalized += threshold / levels;
+
+            let newPixel = floor(normalized * (levels - 1) + 0.5);
+            newPixel = constrain(newPixel, 0, levels - 1);
+
+            if (newPixel === 0) {
+              img.pixels[index + c] = 0;
+            } else {
+              img.pixels[index + c] = floor((newPixel / (levels - 1)) * 255);
+            }
+          }
+        }
+      }
+      img.updatePixels();
+    }
+
+    function draw() {
+      background(0);
+
+      if (!physicsStarted && millis() - startTime >= 0) {
+        physicsStarted = true;
+
+        if (!ENABLE_SCAN) {
+          for (let i = 0; i < cols; i++) {
+            for (let j = 0; j < rows; j++) {
+              if (grid[i][j] !== null) {
+                grid[i][j].revealed = true;
+                if (grid[i][j].canFall && fallDistances[i][j] === 0) {
+                  fallDistances[i][j] = 1;
+                }
+              }
+            }
+          }
+          scanLine = rows;
+        }
+      }
+
+      if (physicsStarted && ENABLE_SCAN && frameCounter % SCAN_SPEED === 0) {
+        if (scanLine < rows) {
+          scanLine += 1;
+        }
+      }
+
+      if (physicsStarted && ENABLE_SCAN) {
+        let maxScanRow = min(floor(scanLine), rows);
+        for (let i = 0; i < cols; i++) {
+          for (let j = 0; j < maxScanRow; j++) {
+            if (grid[i][j] !== null && !grid[i][j].revealed) {
+              grid[i][j].revealed = true;
+
+              if (grid[i][j].canFall && fallDistances[i][j] === 0) {
+                fallDistances[i][j] = 1;
+              }
+            }
+          }
+        }
+      }
+
+      frameCounter++;
+      if (physicsStarted && frameCounter % SIMULATION_SPEED === 0) {
+        for (let i = 0; i < cols; i++) {
+          gridBuffer[i].fill(null);
+          fallDistancesBuffer[i].fill(0);
+        }
+
+        for (let i = 0; i < cols; i++) {
+          for (let j = 0; j < rows; j++) {
+            let particle = grid[i][j];
+            if (particle !== null) {
+              if (!particle.revealed || !particle.canFall) {
+                gridBuffer[i][j] = particle;
+                fallDistancesBuffer[i][j] = fallDistances[i][j];
+              }
+            }
+          }
+        }
+
+        for (let i = 0; i < cols; i++) {
+          for (let j = rows - 1; j >= 0; j--) {
+            let particle = grid[i][j];
+
+            if (particle !== null && particle.dormant) {
+              gridBuffer[i][j] = particle;
+              fallDistancesBuffer[i][j] = fallDistances[i][j];
+              continue;
+            }
+
+            if (particle !== null && particle.canFall && (particle.revealed || fallDistances[i][j] > 0)) {
+              let currentFallDistance = fallDistances[i][j];
+              let fell = false;
+
+              if (particle.canFall && currentFallDistance < MAX_FALL_DISTANCE) {
+
+                if (particle.fallCategory === 3) {
+                  let above = j - 1;
+
+                  if (above >= 0 && grid[i][above] === null) {
+                    gridBuffer[i][above] = particle;
+                    fallDistancesBuffer[i][above] = currentFallDistance + cellSize;
+                    fell = true;
+                  }
+                  else if (above >= 0 && grid[i][above] !== null) {
+                    let aboveParticle = grid[i][above];
+                    if (particle.brightness > aboveParticle.brightness) {
+                      gridBuffer[i][above] = particle;
+                      fallDistancesBuffer[i][above] = currentFallDistance + cellSize;
+                      if (gridBuffer[i][j] === null) {
+                        gridBuffer[i][j] = aboveParticle;
+                        fallDistancesBuffer[i][j] = fallDistances[i][above];
+                      }
+                      fell = true;
+                    }
+                  }
+
+                  if (!fell && above >= 0) {
+                    let dir = random([-1, 1]);
+                    let diag1 = i + dir;
+                    let diag2 = i - dir;
+
+                    if (diag1 >= 0 && diag1 < cols && grid[diag1][above] === null) {
+                      gridBuffer[diag1][above] = particle;
+                      fallDistancesBuffer[diag1][above] = currentFallDistance + cellSize;
+                      fell = true;
+                    } else if (diag2 >= 0 && diag2 < cols && grid[diag2][above] === null) {
+                      gridBuffer[diag2][above] = particle;
+                      fallDistancesBuffer[diag2][above] = currentFallDistance + cellSize;
+                      fell = true;
+                    }
+                  }
+                }
+                else {
+                  let below = j + 1;
+
+                  if (below < rows && currentFallDistance + cellSize <= MAX_FALL_DISTANCE) {
+                    let positions = [
+                      { col: i, row: below, diag: false },
+                      { col: i - 1, row: below, diag: true },
+                      { col: i + 1, row: below, diag: true }
+                    ];
+
+                    let darkestPos = null;
+                    let darkestBrightness = particle.brightness;
+
+                    for (let pos of positions) {
+                      if (pos.col >= 0 && pos.col < cols) {
+                        let targetParticle = grid[pos.col][pos.row];
+
+                        if (targetParticle === null) {
+                          if (0 < darkestBrightness || darkestPos === null) {
+                            darkestPos = pos;
+                            darkestBrightness = 0;
+                          }
+                        } else if (targetParticle.brightness < darkestBrightness) {
+                          darkestPos = pos;
+                          darkestBrightness = targetParticle.brightness;
+                        }
+                      }
+                    }
+
+                    if (darkestPos !== null && particle.brightness > darkestBrightness) {
+                      let targetParticle = grid[darkestPos.col][darkestPos.row];
+
+                      gridBuffer[darkestPos.col][darkestPos.row] = particle;
+                      fallDistancesBuffer[darkestPos.col][darkestPos.row] = currentFallDistance + cellSize;
+                      fell = true;
+
+                      if (targetParticle !== null && gridBuffer[i][j] === null) {
+                        gridBuffer[i][j] = targetParticle;
+                        fallDistancesBuffer[i][j] = fallDistances[darkestPos.col][darkestPos.row];
+                      }
+                    }
+                  }
+                }
+              }
+
+              if (!fell) {
+                if (gridBuffer[i][j] === null) {
+                  particle.dormantFrames++;
+
+                  if (particle.dormantFrames > 30) {
+                    particle.dormant = true;
+                  }
+
+                  gridBuffer[i][j] = particle;
+                  fallDistancesBuffer[i][j] = currentFallDistance;
+                }
+              } else {
+                particle.dormantFrames = 0;
+                particle.dormant = false;
+              }
+            }
+          }
+        }
+
+        let tempGrid = grid;
+        grid = gridBuffer;
+        gridBuffer = tempGrid;
+
+        let tempFall = fallDistances;
+        fallDistances = fallDistancesBuffer;
+        fallDistancesBuffer = tempFall;
+      }
+
+      if (isCaching && physicsStarted) {
+        cacheCurrentFrame();
+      }
+
+      noStroke();
+      let pixelDrawSize = cellSize * PIXEL_BORDER_SIZE;
+      let offset = cellSize * (1 - PIXEL_BORDER_SIZE) / 2;
+
+      for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < rows; j++) {
+          let particle = grid[i][j];
+          if (particle !== null) {
+            let shouldShow = particle.revealed || (particle.canFall && fallDistances[i][j] > 0);
+
+            if (shouldShow) {
+              let c = particle.color;
+              let r = (c >> 16) & 0xFF;
+              let g = (c >> 8) & 0xFF;
+              let b = c & 0xFF;
+              fill(r, g, b);
+              rect(i * cellSize + offset, j * cellSize + offset, pixelDrawSize, pixelDrawSize);
+            }
+          }
+        }
+      }
+    }
+
+    function make2DArray(cols, rows) {
+      let arr = new Array(cols);
+      for (let i = 0; i < cols; i++) {
+        arr[i] = new Array(rows).fill(null);
+      }
+      return arr;
+    }
+
+    function exportHighResImage() {
+      let scale = 4;
+      let exportWidth = cols * cellSize * scale;
+      let exportHeight = rows * cellSize * scale;
+
+      let pg = createGraphics(exportWidth, exportHeight);
+      pg.noSmooth();
+      pg.noStroke();
+
+      let pixelDrawSize = cellSize * PIXEL_BORDER_SIZE * scale;
+      let offset = cellSize * (1 - PIXEL_BORDER_SIZE) / 2 * scale;
+      let scaledCellSize = cellSize * scale;
+
+      pg.background(0);
+
+      for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < rows; j++) {
+          let particle = grid[i][j];
+          if (particle !== null) {
+            let shouldShow = particle.revealed || (particle.canFall && fallDistances[i][j] > 0);
+
+            if (shouldShow) {
+              let c = particle.color;
+              let r = (c >> 16) & 0xFF;
+              let g = (c >> 8) & 0xFF;
+              let b = c & 0xFF;
+              pg.fill(r, g, b);
+              pg.rect(i * scaledCellSize + offset, j * scaledCellSize + offset, pixelDrawSize, pixelDrawSize);
+            }
+          }
+        }
+      }
+
+      save(pg, 'falling_sand_' + Date.now() + '.png');
+      console.log('Image exported at ' + exportWidth + 'x' + exportHeight);
+    }
+
+    function exportGIF() {
+      if (simulationCache.length === 0) {
+        alert('No simulation cached yet. Wait for the simulation to run first.');
+        return;
+      }
+
+      console.log('Generating GIF...');
+      updateGifStatus('Generating GIF... 0%');
+
+      let gif = new GIF({
+        workers: 2,
+        quality: 10,
+        width: cols,
+        height: rows,
+        workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js'
+      });
+
+      let skipFrames = Math.max(1, Math.floor(simulationCache.length / 200));
+      let frameCount = 0;
+
+      for (let f = 0; f < simulationCache.length; f += skipFrames) {
+        let frameData = simulationCache[f];
+        
+        let canvas = document.createElement('canvas');
+        canvas.width = cols;
+        canvas.height = rows;
+        let ctx = canvas.getContext('2d');
+        
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, cols, rows);
+        
+        for (let pixel of frameData) {
+          let c = pixel.color;
+          let r = (c >> 16) & 0xFF;
+          let g = (c >> 8) & 0xFF;
+          let b = c & 0xFF;
+          ctx.fillStyle = `rgb(${r},${g},${b})`;
+          ctx.fillRect(pixel.i, pixel.j, 1, 1);
+        }
+        
+        gif.addFrame(ctx, {delay: 50, copy: true});
+        frameCount++;
+        
+        if (frameCount % 20 === 0) {
+          let progress = Math.floor((f / simulationCache.length) * 100);
+          updateGifStatus(`Generating GIF... ${progress}%`);
+        }
+      }
+
+      gif.on('finished', function(blob) {
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement('a');
+        a.href = url;
+        a.download = 'falling_sand_' + Date.now() + '.gif';
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        console.log('GIF exported with ' + frameCount + ' frames');
+        updateGifStatus('GIF exported!');
+        setTimeout(() => updateGifStatus(''), 2000);
+      });
+
+      gif.on('progress', function(p) {
+        updateGifStatus(`Encoding GIF... ${Math.floor(p * 100)}%`);
+      });
+
+      gif.render();
+    }
+
+    function cacheCurrentFrame() {
+      let frameData = [];
+      for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < rows; j++) {
+          let particle = grid[i][j];
+          if (particle !== null) {
+            let shouldShow = particle.revealed || (particle.canFall && fallDistances[i][j] > 0);
+            if (shouldShow) {
+              frameData.push({
+                i: i,
+                j: j,
+                color: particle.color
+              });
+            }
+          }
+        }
+      }
+      simulationCache.push(frameData);
+    }
+
+    function resetSimulation() {
+      simulationCache = [];
+      isCaching = true;
+      location.reload();
+    }
+
+    function resetToDefaults() {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem('simSpeed');
+        localStorage.removeItem('scanSpeed');
+        localStorage.removeItem('topThreshold');
+        localStorage.removeItem('middleThreshold');
+        localStorage.removeItem('maxFall');
+        localStorage.removeItem('upwardChance');
+        localStorage.removeItem('enableScan');
+        localStorage.removeItem('resolutionScale');
+        localStorage.removeItem('pixelBorder');
+        localStorage.removeItem('uploadedImage');
+        localStorage.removeItem('uploadedFilename');
+      }
+      location.reload();
+    }
+
+    function handleImageUpload(imageData) {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('uploadedImage', imageData);
+      }
+      location.reload();
+    }
+
+    function updateGifStatus(message) {
+      const statusEl = document.getElementById('gifStatus');
+      if (statusEl) {
+        statusEl.textContent = message;
+      }
+    }
+
+    // Make functions globally accessible
+    window.exportImage = exportHighResImage;
+    window.exportGIF = exportGIF;
+    window.resetSimulation = resetSimulation;
+    window.resetToDefaults = resetToDefaults;
+    window.handleImageUpload = handleImageUpload;
+  </script>
 
   <script>
     // Toggle controls panel
@@ -256,7 +854,6 @@
         maxFall: localStorage.getItem('maxFall') || '1200',
         upwardChance: localStorage.getItem('upwardChance') || '0.1',
         enableScan: localStorage.getItem('enableScan') !== 'false',
-        uploadedImage: localStorage.getItem('uploadedImage'),
         uploadedFilename: localStorage.getItem('uploadedFilename'),
         controlsHidden: localStorage.getItem('controlsHidden') === 'true'
       };
@@ -294,12 +891,10 @@
         if (file) {
           const reader = new FileReader();
           reader.onload = function(event) {
-            // Save image and filename, then call handleImageUpload from fallingsand.js
             localStorage.setItem('uploadedFilename', file.name);
             if (typeof handleImageUpload === 'function') {
               handleImageUpload(event.target.result);
             } else {
-              // Fallback if function not loaded yet
               localStorage.setItem('uploadedImage', event.target.result);
               location.reload();
             }
@@ -309,29 +904,12 @@
       });
     });
 
-    function exportImage() {
-      if (typeof exportHighResImage === 'function') {
-        exportHighResImage();
-      } else {
-        console.log('Export function not available yet');
-      }
-    }
-
-    // Enable replay button when cache is ready
-    function enableReplayButton() {
-      const replayBtn = document.getElementById('replayBtn');
-      if (replayBtn) {
-        replayBtn.disabled = false;
-      }
-    }
-
     // Listen for control changes and save (no reload)
     ['resolutionScale', 'pixelBorder', 'simSpeed', 'scanSpeed', 'topThreshold',
      'middleThreshold', 'maxFall', 'upwardChance', 'enableScan'].forEach(id => {
       const element = document.getElementById(id);
       if (element) {
         element.addEventListener('change', function() {
-          // Save to localStorage only (no reload)
           if (element.type === 'checkbox') {
             localStorage.setItem(id, element.checked);
           } else {
