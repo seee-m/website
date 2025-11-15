@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sketch Template</title>
+    <link rel="stylesheet" href="shared.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+</head>
+<body>
+    <!-- Left Slider Panel -->
+    <div class="slider-panel" id="sliderPanel">
+        <div class="slider-control">
+            <label for="slider1">Parameter 1</label>
+            <input type="range" id="slider1" min="0" max="100" value="50" oninput="updateSlider('slider1')">
+            <span class="slider-value" id="slider1-value">50</span>
+        </div>
+
+        <div class="slider-control">
+            <label for="slider2">Parameter 2</label>
+            <input type="range" id="slider2" min="0" max="100" value="50" oninput="updateSlider('slider2')">
+            <span class="slider-value" id="slider2-value">50</span>
+        </div>
+
+        <div class="slider-control">
+            <label for="slider3">Parameter 3</label>
+            <input type="range" id="slider3" min="0" max="100" value="50" oninput="updateSlider('slider3')">
+            <span class="slider-value" id="slider3-value">50</span>
+        </div>
+
+        <div class="slider-control">
+            <label for="slider4">Parameter 4</label>
+            <input type="range" id="slider4" min="0" max="100" value="50" oninput="updateSlider('slider4')">
+            <span class="slider-value" id="slider4-value">50</span>
+        </div>
+
+        <button class="run-btn" onclick="runSketch()">Run (R)</button>
+    </div>
+
+    <!-- Canvas Area -->
+    <div class="canvas-container">
+        <div class="canvas-title">SKETCH CANVAS</div>
+        <div class="canvas-wrapper" id="canvas-wrapper">
+        </div>
+    </div>
+
+    <!-- Control Box -->
+    <div class="control-box-container" id="controlBoxContainer">
+        <div class="control-label">PRESS H TO SHOW / HIDE CONTROLS</div>
+        <div class="control-box">
+            <button onclick="renderWebM()">Render WebM</button>
+            <button onclick="exportImage()">Export Image (I)</button>
+            <button onclick="resetSketch()">Reset</button>
+        </div>
+    </div>
+
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">Controls</button>
+
+    <!-- Mobile Modal Menu -->
+    <div class="mobile-modal" id="mobileModal" onclick="closeMobileMenuOnBackdrop(event)">
+        <div class="mobile-modal-content">
+            <div class="slider-control">
+                <label for="mobile-slider1">Parameter 1</label>
+                <input type="range" id="mobile-slider1" min="0" max="100" value="50" oninput="updateMobileSlider('mobile-slider1', 'slider1')">
+                <span class="slider-value" id="mobile-slider1-value">50</span>
+            </div>
+
+            <div class="slider-control">
+                <label for="mobile-slider2">Parameter 2</label>
+                <input type="range" id="mobile-slider2" min="0" max="100" value="50" oninput="updateMobileSlider('mobile-slider2', 'slider2')">
+                <span class="slider-value" id="mobile-slider2-value">50</span>
+            </div>
+
+            <div class="slider-control">
+                <label for="mobile-slider3">Parameter 3</label>
+                <input type="range" id="mobile-slider3" min="0" max="100" value="50" oninput="updateMobileSlider('mobile-slider3', 'slider3')">
+                <span class="slider-value" id="mobile-slider3-value">50</span>
+            </div>
+
+            <div class="slider-control">
+                <label for="mobile-slider4">Parameter 4</label>
+                <input type="range" id="mobile-slider4" min="0" max="100" value="50" oninput="updateMobileSlider('mobile-slider4', 'slider4')">
+                <span class="slider-value" id="mobile-slider4-value">50</span>
+            </div>
+
+            <button class="run-btn" onclick="runSketch(); closeMobileMenu();">Run (R)</button>
+
+            <div class="control-buttons">
+                <button onclick="renderWebM()">Render WebM</button>
+                <button onclick="exportImage()">Export Image (I)</button>
+                <button class="dashed" onclick="resetSketch()">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // P5.js sketch
+        let canvas;
+        let resizeTimeout = null;
+
+        // Helper function to calculate optimal canvas size
+        function calculateCanvasSize() {
+            const isMobile = window.innerWidth <= 768;
+
+            if (isMobile) {
+                // Mobile: 1rem (16px) padding + controls button (80px)
+                const availableWidth = window.innerWidth - 32;
+                const availableHeight = window.innerHeight - 120;
+                return Math.min(availableWidth, availableHeight);
+            } else {
+                // Desktop: 2.5rem (40px) padding * 2 + wrapper (1rem + 2px border) * 2 + title (20px) + control box (100px)
+                const availableHeight = window.innerHeight - 190;
+                const availableWidth = window.innerWidth - 120;
+                return Math.min(availableHeight, availableWidth);
+            }
+        }
+
+        function setup() {
+            const canvasSize = calculateCanvasSize();
+            canvas = createCanvas(canvasSize, canvasSize);
+            canvas.parent('canvas-wrapper');
+            drawCheckerboard();
+        }
+
+        function draw() {
+            // Animation loop - currently static
+            // Override this function in your custom sketches
+        }
+
+        function windowResized() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                const canvasSize = calculateCanvasSize();
+                resizeCanvas(canvasSize, canvasSize);
+                drawCheckerboard();
+            }, 150);
+        }
+
+        function drawCheckerboard() {
+            const squareSize = 40;
+            const rows = Math.ceil(height / squareSize);
+            const cols = Math.ceil(width / squareSize);
+
+            background(0);
+            noStroke();
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    fill((i + j) % 2 === 0 ? 60 : 30);
+                    rect(j * squareSize, i * squareSize, squareSize, squareSize);
+                }
+            }
+        }
+
+        // Slider functions
+        function updateSlider(sliderId) {
+            const slider = document.getElementById(sliderId);
+            const valueDisplay = document.getElementById(`${sliderId}-value`);
+            valueDisplay.textContent = slider.value;
+            // Add your custom logic here
+        }
+
+        // Control functions
+        function renderWebM() {
+            alert('WebM rendering - implement your recording logic here');
+        }
+
+        function exportImage() {
+            saveCanvas(canvas, 'sketch-export', 'png');
+        }
+
+        function resetSketch() {
+            drawCheckerboard();
+        }
+
+        function runSketch() {
+            console.log('Run sketch - implement your run logic here');
+            // Add your custom run logic here
+        }
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'h' || e.key === 'H') {
+                toggleControls();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                runSketch();
+            }
+            if (e.key === 'i' || e.key === 'I') {
+                exportImage();
+            }
+        });
+
+        function toggleControls() {
+            const panel = document.getElementById('sliderPanel');
+            const controlBoxContainer = document.getElementById('controlBoxContainer');
+
+            panel.classList.toggle('hidden');
+            controlBoxContainer.classList.toggle('hidden');
+        }
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const modal = document.getElementById('mobileModal');
+            modal.classList.add('active');
+            document.body.classList.add('modal-open');
+        }
+
+        function closeMobileMenu() {
+            const modal = document.getElementById('mobileModal');
+            modal.classList.remove('active');
+            document.body.classList.remove('modal-open');
+        }
+
+        function closeMobileMenuOnBackdrop(event) {
+            if (event.target === event.currentTarget) {
+                closeMobileMenu();
+            }
+        }
+
+        function chooseImageMobile() {
+            document.getElementById('imageInput').click();
+        }
+
+        function updateMobileSlider(mobileId, desktopId) {
+            const value = document.getElementById(mobileId).value;
+
+            // Update both mobile and desktop displays
+            document.getElementById(`${mobileId}-value`).textContent = value;
+            document.getElementById(desktopId).value = value;
+            document.getElementById(`${desktopId}-value`).textContent = value;
+
+            // Trigger sketch update
+            // Add your custom logic here
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,446 @@
+/* Sketch Template Shared Styles */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #000;
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    padding: 2.5rem;
+    min-height: 100vh;
+}
+
+/* Common Label Styling */
+.canvas-title,
+.control-label {
+    font-size: 0.75rem;
+    color: #666;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+/* Common Button Base Styling */
+button {
+    background-color: #222;
+    color: #fff;
+    border: 2px solid #444;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+button:hover {
+    background-color: #333;
+    border-color: #666;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+/* Left Panel - Sliders */
+.slider-panel {
+    position: fixed;
+    left: 2.5rem;
+    top: 2.5rem;
+    bottom: 2.5rem;
+    width: 250px;
+    max-width: calc(100vw - 5rem);
+    background-color: #000;
+    border: 2px solid #444;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    transition: left 0.2s ease-in-out;
+    z-index: 10;
+}
+
+.slider-panel.hidden {
+    left: calc(-250px - 2.5rem);
+}
+
+.slider-panel .choose-image-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: transparent;
+    border-style: dashed;
+    font-size: 0.9rem;
+}
+
+.slider-panel .choose-image-btn:hover {
+    background-color: transparent;
+}
+
+.slider-panel .run-btn {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 0.9rem;
+    margin-top: auto;
+}
+
+.slider-control {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.slider-control label {
+    font-size: 0.85rem;
+    color: #aaa;
+}
+
+.slider-control input[type="range"] {
+    width: 100%;
+    height: 4px;
+    background: #333;
+    border-radius: 2px;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.slider-control input[type="range"]::-webkit-slider-track {
+    width: 100%;
+    height: 4px;
+    background: #333;
+    border-radius: 2px;
+}
+
+.slider-control input[type="range"]::-moz-range-track {
+    width: 100%;
+    height: 4px;
+    background: #333;
+    border-radius: 2px;
+}
+
+.slider-control input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    margin-top: -6px;
+}
+
+.slider-control input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+.slider-control .slider-value {
+    font-size: 0.8rem;
+    color: #888;
+    text-align: right;
+}
+
+/* Dropdown Control */
+.slider-control select,
+select.dropdown {
+    width: 100%;
+    padding: 0.5rem;
+    background-color: #222;
+    color: #fff;
+    border: 2px solid #444;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.slider-control select:hover,
+select.dropdown:hover {
+    border-color: #666;
+}
+
+.slider-control select:focus,
+select.dropdown:focus {
+    border-color: #888;
+}
+
+/* File Input Control */
+.slider-control input[type="file"],
+input[type="file"].file-input {
+    width: 100%;
+    font-size: 0.75rem;
+    color: #aaa;
+    cursor: pointer;
+    padding: 0.5rem 0;
+}
+
+.slider-control input[type="file"]::file-selector-button,
+input[type="file"].file-input::file-selector-button {
+    padding: 0.5rem 0.75rem;
+    background-color: #222;
+    color: #fff;
+    border: 2px solid #444;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-family: inherit;
+    transition: all 0.2s;
+    margin-right: 0.5rem;
+}
+
+.slider-control input[type="file"]::file-selector-button:hover,
+input[type="file"].file-input::file-selector-button:hover {
+    background-color: #333;
+    border-color: #666;
+}
+
+/* Filename Display */
+.filename-display {
+    font-size: 0.75rem;
+    color: #666;
+    word-break: break-word;
+    margin-top: 0.25rem;
+    display: none;
+}
+
+.filename-display:not(:empty) {
+    display: block;
+}
+
+/* Checkbox Control */
+.checkbox-control {
+    display: flex;
+    align-items: center;
+}
+
+.checkbox-control label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #aaa;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-control input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #fff;
+}
+
+/* Separator */
+.separator {
+    width: 100%;
+    height: 1px;
+    background-color: #333;
+    margin: 0.5rem 0;
+}
+
+/* Canvas Area - Centered */
+.canvas-container {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+
+.canvas-title {
+    margin-bottom: 0.5rem;
+    align-self: flex-start;
+}
+
+.canvas-wrapper {
+    border: 2px dashed #444;
+    border-radius: 8px;
+    background-color: #000;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.canvas-wrapper canvas {
+    display: block;
+}
+
+/* Control Box - Bottom Right */
+.control-box-container {
+    position: fixed;
+    bottom: 2.5rem;
+    right: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    transition: opacity 0.2s ease-in-out;
+    z-index: 10;
+}
+
+.control-box-container.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.control-box {
+    background-color: #000;
+    border: 2px solid #444;
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.control-box button {
+    padding: 0.65rem 1.25rem;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.control-box button:last-child {
+    background-color: transparent;
+    border-style: dashed;
+}
+
+.control-box button:last-child:hover {
+    background-color: transparent;
+}
+
+/* Mobile Styles */
+.mobile-menu-toggle {
+    display: none;
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+    z-index: 1001;
+}
+
+.mobile-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 2000;
+    backdrop-filter: blur(4px);
+}
+
+.mobile-modal.active {
+    display: block;
+}
+
+.mobile-modal-content {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 80vh;
+    background-color: #000;
+    border: 2px solid #444;
+    border-bottom: none;
+    border-radius: 12px 12px 0 0;
+    padding: 1.5rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.mobile-modal-content .control-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid #333;
+}
+
+.mobile-modal-content button {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.mobile-modal-content button.dashed {
+    background-color: transparent;
+    border-style: dashed;
+}
+
+.mobile-modal-content button.dashed:hover {
+    background-color: transparent;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+/* Scrollbar Styling */
+.slider-panel::-webkit-scrollbar,
+.mobile-modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.slider-panel::-webkit-scrollbar-track,
+.mobile-modal-content::-webkit-scrollbar-track {
+    background: #111;
+    border-radius: 4px;
+}
+
+.slider-panel::-webkit-scrollbar-thumb,
+.mobile-modal-content::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 4px;
+}
+
+.slider-panel::-webkit-scrollbar-thumb:hover,
+.mobile-modal-content::-webkit-scrollbar-thumb:hover {
+    background: #444;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    body {
+        padding: 1rem;
+    }
+
+    .slider-panel,
+    .control-box-container,
+    .canvas-title {
+        display: none;
+    }
+
+    .mobile-menu-toggle {
+        display: block;
+    }
+
+    .canvas-container {
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .canvas-wrapper {
+        padding: 0;
+        border: none;
+    }
+}

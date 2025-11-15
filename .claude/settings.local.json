@@ -3,7 +3,8 @@
     "allow": [
       "Bash(mv:*)",
       "Bash(ls:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(start template.html)"
     ],
     "deny": [],
     "ask": []
