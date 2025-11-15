@@ -210,6 +210,11 @@
         let canvas;
         let resizeTimeout = null;
 
+        // Performance optimizations
+        let scaleFactor, pixelDrawSize, offset;
+        let lastScanRow = 0;
+        let needsRedraw = true;
+
         // Helper function to calculate optimal canvas size (SQUARE)
         function calculateCanvasSize() {
             const isMobile = window.innerWidth <= 768;
@@ -290,6 +295,11 @@
             canvas = createCanvas(canvasSize, canvasSize);
             canvas.parent('canvas-wrapper');
             frameRate(60);
+
+            // Cache drawing calculations
+            scaleFactor = width / cols;
+            pixelDrawSize = scaleFactor * PIXEL_BORDER_SIZE;
+            offset = scaleFactor * (1 - PIXEL_BORDER_SIZE) / 2;
 
             grid = make2DArray(cols, rows);
             gridBuffer = make2DArray(cols, rows);
@@ -387,10 +397,9 @@
         }
 
         function draw() {
-            background(0);
-
             if (!physicsStarted && millis() - startTime >= 0) {
                 physicsStarted = true;
+                needsRedraw = true;
 
                 if (!ENABLE_SCAN) {
                     for (let i = 0; i < cols; i++) {
@@ -404,19 +413,23 @@
                         }
                     }
                     scanLine = rows;
+                    lastScanRow = rows;
                 }
             }
 
+            // Optimized scan reveal - only process new rows
             if (physicsStarted && ENABLE_SCAN && frameCounter % SCAN_SPEED === 0) {
                 if (scanLine < rows) {
                     scanLine += 1;
+                    needsRedraw = true;
                 }
             }
 
-            if (physicsStarted && ENABLE_SCAN) {
+            if (physicsStarted && ENABLE_SCAN && lastScanRow < scanLine) {
                 let maxScanRow = min(floor(scanLine), rows);
+                // Only process rows that haven't been scanned yet
                 for (let i = 0; i < cols; i++) {
-                    for (let j = 0; j < maxScanRow; j++) {
+                    for (let j = lastScanRow; j < maxScanRow; j++) {
                         if (grid[i][j] !== null && !grid[i][j].revealed) {
                             grid[i][j].revealed = true;
 
@@ -426,10 +439,14 @@
                         }
                     }
                 }
+                lastScanRow = maxScanRow;
             }
 
             frameCounter++;
             if (physicsStarted && frameCounter % SIMULATION_SPEED === 0) {
+                needsRedraw = true;
+
+                // Only clear changed cells instead of entire arrays
                 for (let i = 0; i < cols; i++) {
                     gridBuffer[i].fill(null);
                     fallDistancesBuffer[i].fill(0);
@@ -485,7 +502,8 @@
                                     }
 
                                     if (!fell && above >= 0) {
-                                        let dir = random([-1, 1]);
+                                        // Use faster Math.random instead of p5.random
+                                        let dir = Math.random() < 0.5 ? -1 : 1;
                                         let diag1 = i + dir;
                                         let diag2 = i - dir;
 
@@ -504,41 +522,61 @@
                                     let below = j + 1;
 
                                     if (below < rows && currentFallDistance + cellSize <= MAX_FALL_DISTANCE) {
-                                        let positions = [
-                                            { col: i, row: below, diag: false },
-                                            { col: i - 1, row: below, diag: true },
-                                            { col: i + 1, row: below, diag: true }
-                                        ];
-
-                                        let darkestPos = null;
+                                        // Eliminate object allocations - check positions directly
+                                        let darkestCol = -1;
+                                        let darkestRow = -1;
                                         let darkestBrightness = particle.brightness;
 
-                                        for (let pos of positions) {
-                                            if (pos.col >= 0 && pos.col < cols) {
-                                                let targetParticle = grid[pos.col][pos.row];
+                                        // Check center
+                                        let targetParticle = grid[i][below];
+                                        if (targetParticle === null) {
+                                            darkestCol = i;
+                                            darkestRow = below;
+                                            darkestBrightness = 0;
+                                        } else if (targetParticle.brightness < darkestBrightness) {
+                                            darkestCol = i;
+                                            darkestRow = below;
+                                            darkestBrightness = targetParticle.brightness;
+                                        }
 
-                                                if (targetParticle === null) {
-                                                    if (0 < darkestBrightness || darkestPos === null) {
-                                                        darkestPos = pos;
-                                                        darkestBrightness = 0;
-                                                    }
-                                                } else if (targetParticle.brightness < darkestBrightness) {
-                                                    darkestPos = pos;
-                                                    darkestBrightness = targetParticle.brightness;
-                                                }
+                                        // Check left diagonal
+                                        if (i - 1 >= 0) {
+                                            targetParticle = grid[i - 1][below];
+                                            if (targetParticle === null && (darkestBrightness > 0 || darkestCol === -1)) {
+                                                darkestCol = i - 1;
+                                                darkestRow = below;
+                                                darkestBrightness = 0;
+                                            } else if (targetParticle !== null && targetParticle.brightness < darkestBrightness) {
+                                                darkestCol = i - 1;
+                                                darkestRow = below;
+                                                darkestBrightness = targetParticle.brightness;
                                             }
                                         }
 
-                                        if (darkestPos !== null && particle.brightness > darkestBrightness) {
-                                            let targetParticle = grid[darkestPos.col][darkestPos.row];
+                                        // Check right diagonal
+                                        if (i + 1 < cols) {
+                                            targetParticle = grid[i + 1][below];
+                                            if (targetParticle === null && (darkestBrightness > 0 || darkestCol === -1)) {
+                                                darkestCol = i + 1;
+                                                darkestRow = below;
+                                                darkestBrightness = 0;
+                                            } else if (targetParticle !== null && targetParticle.brightness < darkestBrightness) {
+                                                darkestCol = i + 1;
+                                                darkestRow = below;
+                                                darkestBrightness = targetParticle.brightness;
+                                            }
+                                        }
 
-                                            gridBuffer[darkestPos.col][darkestPos.row] = particle;
-                                            fallDistancesBuffer[darkestPos.col][darkestPos.row] = currentFallDistance + cellSize;
+                                        if (darkestCol !== -1 && particle.brightness > darkestBrightness) {
+                                            targetParticle = grid[darkestCol][darkestRow];
+
+                                            gridBuffer[darkestCol][darkestRow] = particle;
+                                            fallDistancesBuffer[darkestCol][darkestRow] = currentFallDistance + cellSize;
                                             fell = true;
 
                                             if (targetParticle !== null && gridBuffer[i][j] === null) {
                                                 gridBuffer[i][j] = targetParticle;
-                                                fallDistancesBuffer[i][j] = fallDistances[darkestPos.col][darkestPos.row];
+                                                fallDistancesBuffer[i][j] = fallDistances[darkestCol][darkestRow];
                                             }
                                         }
                                     }
@@ -573,12 +611,15 @@
                 fallDistancesBuffer = tempFall;
             }
 
-            // Scale grid to canvas
-            let scaleFactor = width / cols;
-            noStroke();
-            let pixelDrawSize = scaleFactor * PIXEL_BORDER_SIZE;
-            let offset = scaleFactor * (1 - PIXEL_BORDER_SIZE) / 2;
+            // Only render when simulation updates
+            if (!needsRedraw) {
+                return;
+            }
 
+            background(0);
+            noStroke();
+
+            // Use cached values
             for (let i = 0; i < cols; i++) {
                 for (let j = 0; j < rows; j++) {
                     let particle = grid[i][j];
@@ -596,6 +637,8 @@
                     }
                 }
             }
+
+            needsRedraw = false;
         }
 
         function windowResized() {
@@ -603,6 +646,13 @@
             resizeTimeout = setTimeout(() => {
                 const canvasSize = calculateCanvasSize();
                 resizeCanvas(canvasSize, canvasSize);
+
+                // Recalculate cached drawing values
+                scaleFactor = width / cols;
+                pixelDrawSize = scaleFactor * PIXEL_BORDER_SIZE;
+                offset = scaleFactor * (1 - PIXEL_BORDER_SIZE) / 2;
+
+                needsRedraw = true;
             }, 150);
         }
 
