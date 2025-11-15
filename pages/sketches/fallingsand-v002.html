@@ -37,8 +37,8 @@
 
         <div class="slider-control">
             <label for="slider3">Scan Speed</label>
-            <input type="range" id="slider3" min="1" max="2" value="2" step="1" oninput="updateSlider('slider3')">
-            <span class="slider-value" id="slider3-value">2</span>
+            <input type="range" id="slider3" min="1" max="6" value="6" step="1" oninput="updateSlider('slider3')">
+            <span class="slider-value" id="slider3-value">6</span>
         </div>
 
         <div class="slider-control">
@@ -131,8 +131,8 @@
 
             <div class="slider-control">
                 <label for="mobile-slider3">Scan Speed</label>
-                <input type="range" id="mobile-slider3" min="1" max="2" value="2" step="1" oninput="updateMobileSlider('mobile-slider3', 'slider3')">
-                <span class="slider-value" id="mobile-slider3-value">2</span>
+                <input type="range" id="mobile-slider3" min="1" max="6" value="6" step="1" oninput="updateMobileSlider('mobile-slider3', 'slider3')">
+                <span class="slider-value" id="mobile-slider3-value">6</span>
             </div>
 
             <div class="slider-control">
@@ -187,7 +187,8 @@
         let RESOLUTION = parseInt(localStorage.getItem('resolution')) || 800;
         let SIMULATION_SPEED_RAW = parseInt(localStorage.getItem('simSpeed')) || 6;
         let SIMULATION_SPEED = 7 - SIMULATION_SPEED_RAW; // Reverse: 1=slowest(6), 6=fastest(1)
-        let SCAN_SPEED = parseInt(localStorage.getItem('scanSpeed')) || 2;
+        let SCAN_SPEED_RAW = parseInt(localStorage.getItem('scanSpeed')) || 6;
+        let SCAN_SPEED = 7 - SCAN_SPEED_RAW; // Reverse: 1=slowest(6), 6=fastest(1)
         let PIXEL_BORDER_SIZE = parseFloat(localStorage.getItem('pixelBorder')) || 0.75;
         let TOP_THRESHOLD = parseFloat(localStorage.getItem('topThreshold')) || 0.05;
         let MIDDLE_THRESHOLD = parseFloat(localStorage.getItem('middleThreshold')) || 0.10;
@@ -246,30 +247,13 @@
                     () => console.log('Uploaded image loaded successfully'),
                     () => {
                         console.log('Failed to load uploaded image, using default');
-                        img = createDefaultImage();
+                        img = loadImage('start.jpg');
                     }
                 );
             } else {
-                console.log('No uploaded image, creating default');
-                img = createDefaultImage();
+                console.log('No uploaded image, loading default start.jpg');
+                img = loadImage('start.jpg');
             }
-        }
-
-        function createDefaultImage() {
-            let defaultImg = createImage(400, 400); // Square default
-            defaultImg.loadPixels();
-            for (let y = 0; y < defaultImg.height; y++) {
-                for (let x = 0; x < defaultImg.width; x++) {
-                    let index = (y * defaultImg.width + x) * 4;
-                    let brightness = map(y, 0, defaultImg.height, 255, 0);
-                    defaultImg.pixels[index] = brightness;
-                    defaultImg.pixels[index + 1] = brightness;
-                    defaultImg.pixels[index + 2] = brightness;
-                    defaultImg.pixels[index + 3] = 255;
-                }
-            }
-            defaultImg.updatePixels();
-            return defaultImg;
         }
 
         function setup() {
@@ -619,22 +603,23 @@
             background(0);
             noStroke();
 
-            // Use cached values
+            // Use cached values - optimize rendering
             for (let i = 0; i < cols; i++) {
+                let x = i * scaleFactor + offset; // Cache x calculation
                 for (let j = 0; j < rows; j++) {
                     let particle = grid[i][j];
-                    if (particle !== null) {
-                        let shouldShow = particle.revealed || (particle.canFall && fallDistances[i][j] > 0);
+                    if (particle === null) continue; // Early exit for null particles
 
-                        if (shouldShow) {
-                            let c = particle.color;
-                            let r = (c >> 16) & 0xFF;
-                            let g = (c >> 8) & 0xFF;
-                            let b = c & 0xFF;
-                            fill(r, g, b);
-                            rect(i * scaleFactor + offset, j * scaleFactor + offset, pixelDrawSize, pixelDrawSize);
-                        }
-                    }
+                    // Early exit for hidden particles
+                    if (!particle.revealed && (!particle.canFall || fallDistances[i][j] === 0)) continue;
+
+                    // Unpack color and draw
+                    let c = particle.color;
+                    let r = (c >> 16) & 0xFF;
+                    let g = (c >> 8) & 0xFF;
+                    let b = c & 0xFF;
+                    fill(r, g, b);
+                    rect(x, j * scaleFactor + offset, pixelDrawSize, pixelDrawSize);
                 }
             }
 
@@ -679,20 +664,20 @@
             let offset = scaledCellSize * (1 - PIXEL_BORDER_SIZE) / 2;
 
             for (let i = 0; i < cols; i++) {
+                let x = i * scaledCellSize + offset; // Cache x calculation
                 for (let j = 0; j < rows; j++) {
                     let particle = grid[i][j];
-                    if (particle !== null) {
-                        let shouldShow = particle.revealed || (particle.canFall && fallDistances[i][j] > 0);
+                    if (particle === null) continue;
 
-                        if (shouldShow) {
-                            let c = particle.color;
-                            let r = (c >> 16) & 0xFF;
-                            let g = (c >> 8) & 0xFF;
-                            let b = c & 0xFF;
-                            pg.fill(r, g, b);
-                            pg.rect(i * scaledCellSize + offset, j * scaledCellSize + offset, pixelDrawSize, pixelDrawSize);
-                        }
-                    }
+                    // Early exit for hidden particles
+                    if (!particle.revealed && (!particle.canFall || fallDistances[i][j] === 0)) continue;
+
+                    let c = particle.color;
+                    let r = (c >> 16) & 0xFF;
+                    let g = (c >> 8) & 0xFF;
+                    let b = c & 0xFF;
+                    pg.fill(r, g, b);
+                    pg.rect(x, j * scaledCellSize + offset, pixelDrawSize, pixelDrawSize);
                 }
             }
 
@@ -717,10 +702,16 @@
                 SIMULATION_SPEED = 7 - SIMULATION_SPEED_RAW;
                 localStorage.setItem('simSpeed', slider.value);
             } else if (sliderId === 'slider3') {
-                SCAN_SPEED = parseInt(slider.value);
+                // Scan Speed - reversed
+                SCAN_SPEED_RAW = parseInt(slider.value);
+                SCAN_SPEED = 7 - SCAN_SPEED_RAW;
                 localStorage.setItem('scanSpeed', slider.value);
             } else if (sliderId === 'slider4') {
                 PIXEL_BORDER_SIZE = parseFloat(slider.value);
+                // Recalculate pixel draw size when border changes
+                pixelDrawSize = scaleFactor * PIXEL_BORDER_SIZE;
+                offset = scaleFactor * (1 - PIXEL_BORDER_SIZE) / 2;
+                needsRedraw = true;
                 localStorage.setItem('pixelBorder', slider.value);
             } else if (sliderId === 'slider5') {
                 localStorage.setItem('topThreshold', slider.value);
@@ -837,7 +828,7 @@
 
             slider1.value = RESOLUTION;
             slider2.value = SIMULATION_SPEED_RAW;
-            slider3.value = SCAN_SPEED;
+            slider3.value = SCAN_SPEED_RAW;
             slider4.value = PIXEL_BORDER_SIZE;
             slider5.value = TOP_THRESHOLD;
             slider6.value = MIDDLE_THRESHOLD;
@@ -846,7 +837,7 @@
 
             document.getElementById('slider1-value').textContent = RESOLUTION;
             document.getElementById('slider2-value').textContent = SIMULATION_SPEED_RAW;
-            document.getElementById('slider3-value').textContent = SCAN_SPEED;
+            document.getElementById('slider3-value').textContent = SCAN_SPEED_RAW;
             document.getElementById('slider4-value').textContent = PIXEL_BORDER_SIZE;
             document.getElementById('slider5-value').textContent = TOP_THRESHOLD;
             document.getElementById('slider6-value').textContent = MIDDLE_THRESHOLD;
@@ -856,7 +847,7 @@
             // Sync mobile sliders
             document.getElementById('mobile-slider1').value = RESOLUTION;
             document.getElementById('mobile-slider2').value = SIMULATION_SPEED_RAW;
-            document.getElementById('mobile-slider3').value = SCAN_SPEED;
+            document.getElementById('mobile-slider3').value = SCAN_SPEED_RAW;
             document.getElementById('mobile-slider4').value = PIXEL_BORDER_SIZE;
             document.getElementById('mobile-slider5').value = TOP_THRESHOLD;
             document.getElementById('mobile-slider6').value = MIDDLE_THRESHOLD;
@@ -865,7 +856,7 @@
 
             document.getElementById('mobile-slider1-value').textContent = RESOLUTION;
             document.getElementById('mobile-slider2-value').textContent = SIMULATION_SPEED_RAW;
-            document.getElementById('mobile-slider3-value').textContent = SCAN_SPEED;
+            document.getElementById('mobile-slider3-value').textContent = SCAN_SPEED_RAW;
             document.getElementById('mobile-slider4-value').textContent = PIXEL_BORDER_SIZE;
             document.getElementById('mobile-slider5-value').textContent = TOP_THRESHOLD;
             document.getElementById('mobile-slider6-value').textContent = MIDDLE_THRESHOLD;
