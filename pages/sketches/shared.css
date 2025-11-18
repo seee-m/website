@@ -25,21 +25,21 @@ body {
 
 /* Common Button Base Styling */
 button {
-    background-color: #222;
+    background-color: #111;
     color: #fff;
     border: 2px solid #444;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background-color 0.2s, border-color 0.2s;
 }
 
 button:hover {
-    background-color: #333;
+    background-color: #1a1a1a;
     border-color: #666;
 }
 
 button:active {
-    transform: scale(0.98);
+    background-color: #0a0a0a;
 }
 
 /* Left Panel - Sliders */
@@ -98,6 +98,7 @@ button:active {
 .slider-control label {
     font-size: 0.85rem;
     color: #aaa;
+    line-height: 1.4;
 }
 
 .slider-control input[type="range"] {
@@ -342,9 +343,8 @@ input[type="file"].file-input::file-selector-button:hover {
     display: none;
     position: fixed;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.7);
     z-index: 2000;
-    backdrop-filter: blur(4px);
 }
 
 .mobile-modal.active {
@@ -353,27 +353,28 @@ input[type="file"].file-input::file-selector-button:hover {
 
 .mobile-modal-content {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    max-height: 80vh;
+    inset: 0;
     background-color: #000;
-    border: 2px solid #444;
-    border-bottom: none;
-    border-radius: 12px 12px 0 0;
     padding: 1.5rem;
     overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1rem;
+    box-sizing: border-box;
 }
 
 .mobile-modal-content .control-buttons {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    padding-top: 1rem;
-    border-top: 1px solid #333;
+}
+
+.mobile-modal-content .control-buttons-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
 }
 
 .mobile-modal-content button {
@@ -443,5 +444,88 @@ body.modal-open {
     .canvas-wrapper {
         padding: 0;
         border: none;
+    }
+
+    /* Mobile touch targets and spacing */
+    .mobile-modal-content {
+        gap: 0.5rem;
+    }
+
+    .mobile-modal-content .slider-control {
+        gap: 0.5rem;
+        padding: 0.5rem 0;
+        min-height: auto;
+        overflow: visible;
+    }
+
+    .mobile-modal-content .slider-control label {
+        font-size: 0.9rem;
+        line-height: 1.4;
+        min-height: 1.3rem;
+        display: block;
+        overflow: visible;
+        white-space: normal;
+        word-wrap: break-word;
+    }
+
+    .mobile-modal-content .slider-control input[type="range"] {
+        width: 100%;
+        height: 8px;
+        background: #333;
+        margin: 0.5rem 0;
+        padding: 0;
+        border-radius: 4px;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    .mobile-modal-content .slider-control input[type="range"]::-webkit-slider-track {
+        width: 100%;
+        height: 8px;
+        background: #333;
+        border-radius: 4px;
+    }
+
+    .mobile-modal-content .slider-control input[type="range"]::-moz-range-track {
+        width: 100%;
+        height: 8px;
+        background: #333;
+        border-radius: 4px;
+    }
+
+    .mobile-modal-content .slider-control input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 22px;
+        height: 22px;
+        background: #fff;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 2px solid #000;
+        margin-top: -7px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .mobile-modal-content .slider-control input[type="range"]::-moz-range-thumb {
+        width: 22px;
+        height: 22px;
+        background: #fff;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 2px solid #000;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .mobile-modal-content .slider-control .slider-value {
+        font-size: 0.85rem;
+        min-height: 1.2rem;
+        display: block;
+        line-height: 1.3;
+        color: #888;
+        text-align: right;
+    }
+
+    .separator {
+        margin: 0.2rem 0;
     }
 }

@@ -60,6 +60,11 @@
     <!-- Mobile Modal Menu -->
     <div class="mobile-modal" id="mobileModal" onclick="closeMobileMenuOnBackdrop(event)">
         <div class="mobile-modal-content">
+            <div class="control-buttons">
+                <button class="run-btn" onclick="runSketch(); closeMobileMenu();">Go</button>
+                <button onclick="exportImage()">Export Image (I)</button>
+            </div>
+
             <div class="slider-control">
                 <label for="mobile-slider1">Parameter 1</label>
                 <input type="range" id="mobile-slider1" min="0" max="100" value="50" oninput="updateMobileSlider('mobile-slider1', 'slider1')">
@@ -84,11 +89,7 @@
                 <span class="slider-value" id="mobile-slider4-value">50</span>
             </div>
 
-            <button class="run-btn" onclick="runSketch(); closeMobileMenu();">Run (R)</button>
-
-            <div class="control-buttons">
-                <button onclick="renderWebM()">Render WebM</button>
-                <button onclick="exportImage()">Export Image (I)</button>
+            <div class="control-buttons-bottom">
                 <button class="dashed" onclick="resetSketch()">Reset</button>
             </div>
         </div>
@@ -157,7 +158,13 @@
             const slider = document.getElementById(sliderId);
             const valueDisplay = document.getElementById(`${sliderId}-value`);
             valueDisplay.textContent = slider.value;
-            // Add your custom logic here
+            // Only update display - values saved on Run/Restart
+        }
+
+        function saveAllSettings() {
+            // Save all slider values when Run is clicked
+            // Add localStorage.setItem calls here as needed
+            // Example: localStorage.setItem('param1', document.getElementById('slider1').value);
         }
 
         // Control functions
@@ -174,6 +181,7 @@
         }
 
         function runSketch() {
+            saveAllSettings();
             console.log('Run sketch - implement your run logic here');
             // Add your custom run logic here
         }
@@ -218,10 +226,6 @@
             }
         }
 
-        function chooseImageMobile() {
-            document.getElementById('imageInput').click();
-        }
-
         function updateMobileSlider(mobileId, desktopId) {
             const value = document.getElementById(mobileId).value;
 
@@ -230,8 +234,7 @@
             document.getElementById(desktopId).value = value;
             document.getElementById(`${desktopId}-value`).textContent = value;
 
-            // Trigger sketch update
-            // Add your custom logic here
+            // Only update display - values saved on Run/Restart
         }
     </script>
 </body>

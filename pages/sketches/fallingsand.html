@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Falling Sand Simulation</title>
+    <link rel="stylesheet" href="shared.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <script src="fallingsand.js"></script>
+</head>
+<body>
+    <!-- Left Slider Panel -->
+    <div class="slider-panel" id="sliderPanel" style="visibility: hidden;">
+        <!-- Image Upload -->
+        <div class="slider-control">
+            <label for="imageUpload">Image Upload</label>
+            <input type="file" id="imageUpload" accept="image/*">
+            <div class="filename-display" id="filenameDisplay"></div>
+        </div>
+
+        <div class="separator"></div>
+
+        <!-- Resolution Slider -->
+        <div class="slider-control">
+            <label for="slider1">Resolution</label>
+            <input type="range" id="slider1" min="400" max="1200" value="800" step="200" oninput="updateSlider('slider1')">
+            <span class="slider-value" id="slider1-value">800</span>
+        </div>
+
+
+
+        <!-- Sliders -->
+        <div class="slider-control">
+            <label for="slider2">Simulation Speed</label>
+            <input type="range" id="slider2" min="1" max="6" value="6" step="1" oninput="updateSlider('slider2')">
+            <span class="slider-value" id="slider2-value">6</span>
+        </div>
+
+        <div class="slider-control">
+            <label for="slider3">Scan Speed</label>
+            <input type="range" id="slider3" min="1" max="6" value="6" step="1" oninput="updateSlider('slider3')">
+            <span class="slider-value" id="slider3-value">6</span>
+        </div>
+
+        <div class="slider-control">
+            <label for="slider4">Pixel Border</label>
+            <input type="range" id="slider4" min="0.1" max="1" value="0.75" step="0.05" oninput="updateSlider('slider4')">
+            <span class="slider-value" id="slider4-value">0.75</span>
+        </div>
+
+        <div class="slider-control">
+            <label for="slider5">Top Threshold</label>
+            <input type="range" id="slider5" min="0" max="1" value="0.05" step="0.01" oninput="updateSlider('slider5')">
+            <span class="slider-value" id="slider5-value">0.05</span>
+        </div>
+
+        <div class="slider-control">
+            <label for="slider6">Middle Threshold</label>
+            <input type="range" id="slider6" min="0" max="1" value="0.10" step="0.01" oninput="updateSlider('slider6')">
+            <span class="slider-value" id="slider6-value">0.10</span>
+        </div>
+
+        <div class="slider-control">
+            <label for="slider7">Max Fall Distance</label>
+            <input type="range" id="slider7" min="50" max="1200" value="1200" step="50" oninput="updateSlider('slider7')">
+            <span class="slider-value" id="slider7-value">1200</span>
+        </div>
+
+        <div class="slider-control">
+            <label for="slider8">Upward Chance</label>
+            <input type="range" id="slider8" min="0" max="1" value="0.1" step="0.01" oninput="updateSlider('slider8')">
+            <span class="slider-value" id="slider8-value">0.1</span>
+        </div>
+
+        <!-- Enable Scan Checkbox -->
+        <div class="checkbox-control">
+            <label for="enableScan">
+                <input type="checkbox" id="enableScan" checked onchange="saveCheckbox('enableScan', this.checked)">
+                Enable Scan
+            </label>
+        </div>
+
+        <button class="run-btn" onclick="runSketch()">Restart (R)</button>
+    </div>
+
+    <!-- Canvas Area -->
+    <div class="canvas-container">
+        <div class="canvas-title">FALLING SAND SIMULATION</div>
+        <div class="canvas-wrapper" id="canvas-wrapper">
+        </div>
+    </div>
+
+    <!-- Control Box -->
+    <div class="control-box-container" id="controlBoxContainer" style="visibility: hidden;">
+        <div class="control-label">PRESS H TO SHOW / HIDE CONTROLS</div>
+        <div class="control-box">
+            <button onclick="renderWebM()">Render WebM</button>
+            <button onclick="exportImage()">Export Image (I)</button>
+            <button onclick="resetSketch()">Reset to Defaults</button>
+        </div>
+    </div>
+
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">Controls</button>
+
+    <!-- Mobile Modal Menu -->
+    <div class="mobile-modal" id="mobileModal">
+        <div class="mobile-modal-content">
+            <div class="top-bar">
+                <!-- Image Upload -->
+                <div class="slider-control">
+                    <button class="choose-image-btn" onclick="chooseImageMobile()">Choose Image</button>
+                    <div class="filename-display" id="mobileFilenameDisplay"></div>
+                </div>
+            </div>
+
+            <div class="control-buttons">
+                <button class="run-btn" onclick="runSketch(); closeMobileMenu();">Go</button>
+                <button onclick="exportImage()">Export Image (I)</button>
+            </div>
+
+         <div class="separator"></div>
+         <div class="separator"></div>
+
+
+            <!-- Resolution Slider -->
+            <div class="slider-control">
+                <label for="mobile-slider1">Resolution</label>
+                <input type="range" id="mobile-slider1" min="400" max="1200" value="800" step="200" oninput="updateMobileSlider('mobile-slider1', 'slider1')">
+                <span class="slider-value" id="mobile-slider1-value">800</span>
+            </div>
+
+
+            <div class="slider-control">
+                <label for="mobile-slider2">Simulation Speed</label>
+                <input type="range" id="mobile-slider2" min="1" max="6" value="6" step="1" oninput="updateMobileSlider('mobile-slider2', 'slider2')">
+                <span class="slider-value" id="mobile-slider2-value">6</span>
+            </div>
+
+            <div class="slider-control">
+                <label for="mobile-slider3">Scan Speed</label>
+                <input type="range" id="mobile-slider3" min="1" max="6" value="6" step="1" oninput="updateMobileSlider('mobile-slider3', 'slider3')">
+                <span class="slider-value" id="mobile-slider3-value">6</span>
+            </div>
+
+            <div class="slider-control">
+                <label for="mobile-slider4">Pixel Border</label>
+                <input type="range" id="mobile-slider4" min="0.1" max="1" value="0.75" step="0.05" oninput="updateMobileSlider('mobile-slider4', 'slider4')">
+                <span class="slider-value" id="mobile-slider4-value">0.75</span>
+            </div>
+
+            <div class="slider-control">
+                <label for="mobile-slider5">Top Threshold</label>
+                <input type="range" id="mobile-slider5" min="0" max="1" value="0.05" step="0.01" oninput="updateMobileSlider('mobile-slider5', 'slider5')">
+                <span class="slider-value" id="mobile-slider5-value">0.05</span>
+            </div>
+
+            <div class="slider-control">
+                <label for="mobile-slider6">Middle Threshold</label>
+                <input type="range" id="mobile-slider6" min="0" max="1" value="0.10" step="0.01" oninput="updateMobileSlider('mobile-slider6', 'slider6')">
+                <span class="slider-value" id="mobile-slider6-value">0.10</span>
+            </div>
+
+            <div class="slider-control">
+                <label for="mobile-slider7">Max Fall Distance</label>
+                <input type="range" id="mobile-slider7" min="50" max="1200" value="1200" step="50" oninput="updateMobileSlider('mobile-slider7', 'slider7')">
+                <span class="slider-value" id="mobile-slider7-value">1200</span>
+            </div>
+
+            <div class="slider-control">
+                <label for="mobile-slider8">Upward Chance</label>
+                <input type="range" id="mobile-slider8" min="0" max="1" value="0.1" step="0.01" oninput="updateMobileSlider('mobile-slider8', 'slider8')">
+                <span class="slider-value" id="mobile-slider8-value">0.1</span>
+            </div>
+
+            <div class="checkbox-control">
+                <label for="mobileEnableScan">
+                    <input type="checkbox" id="mobileEnableScan" checked onchange="syncCheckbox('mobileEnableScan', 'enableScan')">
+                    Enable Scan
+                </label>
+            </div>
+
+            <div class="control-buttons-bottom">
+                <button class="dashed" onclick="resetSketch()">Reset to Defaults</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // UI Control Functions - p5.js sketch logic is in fallingsand.js
+
+        // Slider functions
+        function updateSlider(sliderId) {
+            const slider = document.getElementById(sliderId);
+            const valueDisplay = document.getElementById(`${sliderId}-value`);
+            valueDisplay.textContent = slider.value;
+
+            // Only update the display value, don't save to localStorage
+            // Values will be saved when Restart button is clicked
+        }
+
+        function saveCheckbox(id, value) {
+            // Only update the display, don't save yet
+            // Will be saved when Restart is clicked
+        }
+
+        function saveAllSettings() {
+            // Save all slider values to localStorage
+            localStorage.setItem('resolution', document.getElementById('slider1').value);
+            localStorage.setItem('simSpeed', document.getElementById('slider2').value);
+            localStorage.setItem('scanSpeed', document.getElementById('slider3').value);
+            localStorage.setItem('pixelBorder', document.getElementById('slider4').value);
+            localStorage.setItem('topThreshold', document.getElementById('slider5').value);
+            localStorage.setItem('middleThreshold', document.getElementById('slider6').value);
+            localStorage.setItem('maxFall', document.getElementById('slider7').value);
+            localStorage.setItem('upwardChance', document.getElementById('slider8').value);
+            localStorage.setItem('enableScan', document.getElementById('enableScan').checked);
+        }
+
+        function saveAndReload(key, value) {
+            localStorage.setItem(key, value);
+            location.reload();
+        }
+
+        // Control functions
+        function renderWebM() {
+            alert('WebM rendering - CCapture.js integration coming soon');
+        }
+
+        function resetSketch() {
+            localStorage.clear();
+            location.reload();
+        }
+
+        function runSketch() {
+            saveAllSettings();
+            location.reload();
+        }
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'h' || e.key === 'H') {
+                toggleControls();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                runSketch();
+            }
+            if (e.key === 'i' || e.key === 'I') {
+                exportImage();
+            }
+        });
+
+        function toggleControls() {
+            const panel = document.getElementById('sliderPanel');
+            const controlBoxContainer = document.getElementById('controlBoxContainer');
+
+            panel.classList.toggle('hidden');
+            controlBoxContainer.classList.toggle('hidden');
+
+            // Save UI state
+            const isHidden = panel.classList.contains('hidden');
+            localStorage.setItem('uiHidden', isHidden);
+        }
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const modal = document.getElementById('mobileModal');
+            modal.classList.add('active');
+            document.body.classList.add('modal-open');
+        }
+
+        function closeMobileMenu() {
+            const modal = document.getElementById('mobileModal');
+            modal.classList.remove('active');
+            document.body.classList.remove('modal-open');
+        }
+
+        function closeMobileMenuOnBackdrop(event) {
+            if (event.target === event.currentTarget) {
+                closeMobileMenu();
+            }
+        }
+
+        function chooseImageMobile() {
+            document.getElementById('imageUpload').click();
+        }
+
+        function updateMobileSlider(mobileId, desktopId) {
+            const value = document.getElementById(mobileId).value;
+
+            // Update both mobile and desktop displays
+            document.getElementById(`${mobileId}-value`).textContent = value;
+            document.getElementById(desktopId).value = value;
+            document.getElementById(`${desktopId}-value`).textContent = value;
+
+            // Don't save - only update display
+        }
+
+        function syncCheckbox(mobileId, desktopId) {
+            const value = document.getElementById(mobileId).checked;
+            document.getElementById(desktopId).checked = value;
+
+            // Don't save - only update display
+        }
+
+        // Load saved values on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            // Load saved slider values
+            const slider1 = document.getElementById('slider1');
+            const slider2 = document.getElementById('slider2');
+            const slider3 = document.getElementById('slider3');
+            const slider4 = document.getElementById('slider4');
+            const slider5 = document.getElementById('slider5');
+            const slider6 = document.getElementById('slider6');
+            const slider7 = document.getElementById('slider7');
+            const slider8 = document.getElementById('slider8');
+
+            slider1.value = RESOLUTION;
+            slider2.value = SIMULATION_SPEED_RAW;
+            slider3.value = SCAN_SPEED_RAW;
+            slider4.value = PIXEL_BORDER_SIZE;
+            slider5.value = TOP_THRESHOLD;
+            slider6.value = MIDDLE_THRESHOLD;
+            slider7.value = MAX_FALL_DISTANCE;
+            slider8.value = UPWARD_CHANCE;
+
+            document.getElementById('slider1-value').textContent = RESOLUTION;
+            document.getElementById('slider2-value').textContent = SIMULATION_SPEED_RAW;
+            document.getElementById('slider3-value').textContent = SCAN_SPEED_RAW;
+            document.getElementById('slider4-value').textContent = PIXEL_BORDER_SIZE;
+            document.getElementById('slider5-value').textContent = TOP_THRESHOLD;
+            document.getElementById('slider6-value').textContent = MIDDLE_THRESHOLD;
+            document.getElementById('slider7-value').textContent = MAX_FALL_DISTANCE;
+            document.getElementById('slider8-value').textContent = UPWARD_CHANCE;
+
+            // Sync mobile sliders
+            document.getElementById('mobile-slider1').value = RESOLUTION;
+            document.getElementById('mobile-slider2').value = SIMULATION_SPEED_RAW;
+            document.getElementById('mobile-slider3').value = SCAN_SPEED_RAW;
+            document.getElementById('mobile-slider4').value = PIXEL_BORDER_SIZE;
+            document.getElementById('mobile-slider5').value = TOP_THRESHOLD;
+            document.getElementById('mobile-slider6').value = MIDDLE_THRESHOLD;
+            document.getElementById('mobile-slider7').value = MAX_FALL_DISTANCE;
+            document.getElementById('mobile-slider8').value = UPWARD_CHANCE;
+
+            document.getElementById('mobile-slider1-value').textContent = RESOLUTION;
+            document.getElementById('mobile-slider2-value').textContent = SIMULATION_SPEED_RAW;
+            document.getElementById('mobile-slider3-value').textContent = SCAN_SPEED_RAW;
+            document.getElementById('mobile-slider4-value').textContent = PIXEL_BORDER_SIZE;
+            document.getElementById('mobile-slider5-value').textContent = TOP_THRESHOLD;
+            document.getElementById('mobile-slider6-value').textContent = MIDDLE_THRESHOLD;
+            document.getElementById('mobile-slider7-value').textContent = MAX_FALL_DISTANCE;
+            document.getElementById('mobile-slider8-value').textContent = UPWARD_CHANCE;
+
+            // Load checkbox
+            document.getElementById('enableScan').checked = ENABLE_SCAN;
+            document.getElementById('mobileEnableScan').checked = ENABLE_SCAN;
+
+            // Restore UI visibility state
+            const uiHidden = localStorage.getItem('uiHidden') === 'true';
+            const sliderPanel = document.getElementById('sliderPanel');
+            const controlBoxContainer = document.getElementById('controlBoxContainer');
+
+            if (uiHidden) {
+                sliderPanel.classList.add('hidden');
+                controlBoxContainer.classList.add('hidden');
+            }
+
+            // Remove the initial hidden style after state is restored
+            sliderPanel.style.visibility = 'visible';
+            controlBoxContainer.style.visibility = 'visible';
+
+            // Display filename if available
+            const uploadedFilename = localStorage.getItem('uploadedFilename');
+            if (uploadedFilename) {
+                document.getElementById('filenameDisplay').textContent = uploadedFilename;
+                document.getElementById('filenameDisplay').style.display = 'block';
+                document.getElementById('mobileFilenameDisplay').textContent = uploadedFilename;
+                document.getElementById('mobileFilenameDisplay').style.display = 'block';
+            }
+
+            // Handle image upload
+            document.getElementById('imageUpload').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        localStorage.setItem('uploadedFilename', file.name);
+                        localStorage.setItem('uploadedImage', event.target.result);
+                        location.reload();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
