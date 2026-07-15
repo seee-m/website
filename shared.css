@@ -23,7 +23,8 @@
 body {
     overflow: hidden;
     width: 100vw;
-    height: 100vh;
+    height: 100vh; /* fallback for browsers without dvh support */
+    height: 100dvh;
 }
 
 /* =========================
