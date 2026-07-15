@@ -9,55 +9,25 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="stylesheet" href="shared.css">
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="directory-component.css">
 </head>
 <body>
     <div class="container">
-        <!-- Background and work images -->
+        <!-- Background (back) and work (front) images -->
         <img id="background" class="background" alt="Background">
         <div id="workContainer" class="work"></div>
-        
-        <!-- Header with title and navigation -->
-        <header class="header">
-            <div class="box title-box">
-                <div class="title-box-top">
-                    <span class="title">[c-m] connor macdonald <br> applied artist & designer</span>
-
- 
-                </div>
-                
-                <div class="title-box-bottom">
-                    <button id="directoryToggle" class="nav-link">[directory]</button>
-                    <div style="display: flex; gap: 10px; margin-left: auto;">
-                        <button id="bgToggle" class="nav-link mono-text-button">⏻</button>
-                        <button id="reroll" class="nav-link">[randomise]</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="box controls-box">
-                <p class="readout" id="fileReadout"></p>
-            </div>
-        </header>
     </div>
 
     <script>
         // Configuration
         const IMAGE_PATH = '/media/background/';
         const WORK_PATH = '/media/work/';
-        const TYPING_SPEED = 50; // milliseconds per character
-        
+
         // State
         let backgrounds = [];
         let works = [];
-        let currentWorkFile = '';
-        let typewriterTimeout;
         let lastBackground = null;
         let lastWork = null;
-        
-        // Utility
-        const random = (array) => array[Math.floor(Math.random() * array.length)];
-        
+
         // Random selection excluding last pick
         function randomExcluding(array, exclude) {
             if (array.length <= 1) return array[0];
@@ -67,7 +37,7 @@
             } while (item === exclude);
             return item;
         }
-        
+
         // Load media list from text file (images and videos)
         async function loadImages(filename, path) {
             try {
@@ -87,28 +57,7 @@
         function isVideo(filename) {
             return filename.toLowerCase().endsWith('.mp4') || filename.toLowerCase().endsWith('.webm');
         }
-        
-        // Typewriter effect
-        function typeWriter(text, element) {
-            // Clear any existing timeout
-            if (typewriterTimeout) {
-                clearTimeout(typewriterTimeout);
-            }
-            
-            element.textContent = '';
-            let index = 0;
-            
-            function type() {
-                if (index < text.length) {
-                    element.textContent += text.charAt(index);
-                    index++;
-                    typewriterTimeout = setTimeout(type, TYPING_SPEED);
-                }
-            }
-            
-            type();
-        }
-        
+
         // Update displayed images/videos
         function refresh() {
             if (backgrounds.length) {
@@ -141,14 +90,9 @@
                 }
 
                 workContainer.appendChild(mediaElement);
-
-                // Extract filename from path and update readout
-                currentWorkFile = workPath.replace(WORK_PATH, '');
-                const readoutElement = document.getElementById('fileReadout');
-                typeWriter(currentWorkFile, readoutElement);
             }
         }
-        
+
         // Initialize
         async function init() {
             backgrounds = await loadImages('/media/background/background.txt', IMAGE_PATH);
@@ -156,60 +100,11 @@
             refresh();
         }
 
-        // Events
-        document.getElementById('reroll').addEventListener('click', refresh);
+        // Click/tap anywhere to swap both images
+        document.addEventListener('click', refresh);
 
-        // Background toggle
-        let backgroundVisible = true;
-        document.getElementById('bgToggle').addEventListener('click', function() {
-            const bgElement = document.getElementById('background');
-            backgroundVisible = !backgroundVisible;
-            bgElement.style.display = backgroundVisible ? 'block' : 'none';
-        });
-        
-        // Position work media below controls-box on mobile only
-        function positionWorkImage() {
-            const workContainer = document.getElementById('workContainer');
-
-            if (window.innerWidth <= 600 || window.innerHeight > window.innerWidth) {
-                const controlsBox = document.querySelector('.controls-box');
-
-                if (controlsBox && workContainer) {
-                    const controlsBoxRect = controlsBox.getBoundingClientRect();
-                    const controlsBoxBottom = controlsBoxRect.bottom;
-
-                    // Position work container so its top aligns with controls-box bottom plus 1.5rem spacing
-                    workContainer.style.top = (controlsBoxBottom + 24) + 'px';  // 24px = 1.5rem
-                    workContainer.style.bottom = 'auto';
-                }
-            } else {
-                // Reset positioning for desktop
-                if (workContainer) {
-                    workContainer.style.top = '';
-                    workContainer.style.bottom = '';
-                }
-            }
-        }
-        
-        // Run on load and resize
-        window.addEventListener('load', positionWorkImage);
-        
-        let resizeTimeout;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(positionWorkImage, 150);
-        });
-        
-        // Update refresh to reposition after image changes
-        const originalRefresh = refresh;
-        refresh = function() {
-            originalRefresh();
-            setTimeout(positionWorkImage, 100);
-        };
-        
         // Start
         init();
     </script>
-    <script src="directory-component.js"></script>
 </body>
 </html>

@@ -7,14 +7,6 @@ body {
     background-color: #000108;
 }
 
-/* Directory Modal Theme - Info page (black bg, yellow hover) */
-:root {
-    --directory-bg: #000000;
-    --directory-border: none;
-    --directory-default-filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%) opacity(0.5);
-    --directory-hover-filter: invert(89%) sepia(70%) saturate(1773%) hue-rotate(340deg) brightness(103%) contrast(101%);
-}
-
 /* Background Image - Info specific */
 .background-image {
     position: fixed;
@@ -29,57 +21,4 @@ body {
 /* Text Overlay - Info theme (yellow) */
 .text-overlay {
     color: #FFE600;
-}
-
-/* Box Components - Info theme */
-
-.title-box {
-    background: #FFE600;
-    color: #000108;
-    border: none;
-}
-
-.controls-box {
-    background: #ffffff;
-    border: none;
-}
-
-/* Links Container */
-.links-container {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0;
-}
-
-/* Text Colors - Links theme */
-.home-link {
-    color: #000108;
-}
-
-.home-text {
-    color: #000108;
-    margin: 0;
-}
-
-.home-link:hover {
-    opacity: 0.3;
-}
-
-.nav-link {
-    color: #000108;
-}
-
-.nav-link:hover {
-    opacity: 0.3;
-}
-
-.readout {
-    color: #000000;
-    margin: 0;
-}
-
-/* SVG Logo - Info theme (dark) */
-.svg-logo {
-    fill: #000108;
 }
