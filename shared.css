@@ -53,6 +53,14 @@ body {
    MOBILE RESPONSIVE
    ========================= */
 @media (max-width: 600px), (max-aspect-ratio: 1/1) {
+    body {
+        /* lvh (large viewport) ignores Safari's translucent bottom toolbar,
+           so the background keeps filling the screen instead of leaving a
+           black gap behind it */
+        height: 100vh;
+        height: 100lvh;
+    }
+
     .text-overlay {
         font-size: clamp(2rem, 15vw, 6rem);
         line-height: 0.95;

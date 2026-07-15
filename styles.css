@@ -52,15 +52,25 @@ body {
 
 /* Mobile - Index specific */
 @media (max-width: 600px), (max-aspect-ratio: 1/1) {
+    .background {
+        /* lvh (large viewport) ignores Safari's translucent bottom toolbar,
+           so the background keeps filling the screen instead of leaving a
+           black gap behind it */
+        height: 100vh;
+        height: 100lvh;
+    }
+
     .work {
-        max-width: calc(100vw - 2rem);
+        width: 100vw;
+        max-width: 100vw;
+        padding: 0 5vw;
         max-height: 90vh;
         max-height: 90dvh;
     }
 
     .work img,
     .work video {
-        max-width: calc(100vw - 2rem);
+        max-width: 100%;
         object-position: center;
     }
 }
