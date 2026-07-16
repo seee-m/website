@@ -6,7 +6,10 @@
       "Bash(find:*)",
       "Bash(start template.html)",
       "Bash(chmod +x generate-lists.sh)",
-      "Bash(./generate-lists.sh)"
+      "Bash(./generate-lists.sh)",
+      "Bash(gh api *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ],
     "deny": [],
     "ask": []
