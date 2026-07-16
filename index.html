@@ -38,6 +38,34 @@
             return item;
         }
 
+        // Warm the browser cache for a path so the next click is instant
+        function preload(path) {
+            if (!path) return;
+            if (isVideo(path)) {
+                const video = document.createElement('video');
+                video.preload = 'auto';
+                video.src = path;
+            } else {
+                const img = new Image();
+                img.src = path;
+            }
+        }
+
+        // Predict the next random pick (excluding the current one) and warm it
+        let nextBackground = null;
+        let nextWork = null;
+
+        function preloadNext() {
+            if (backgrounds.length) {
+                nextBackground = randomExcluding(backgrounds, lastBackground);
+                preload(nextBackground);
+            }
+            if (works.length) {
+                nextWork = randomExcluding(works, lastWork);
+                preload(nextWork);
+            }
+        }
+
         // Load media list from text file (images and videos)
         async function loadImages(filename, path) {
             try {
@@ -61,12 +89,12 @@
         // Update displayed images/videos
         function refresh() {
             if (backgrounds.length) {
-                const bgPath = randomExcluding(backgrounds, lastBackground);
+                const bgPath = nextBackground || randomExcluding(backgrounds, lastBackground);
                 lastBackground = bgPath;
                 document.getElementById('background').src = bgPath;
             }
             if (works.length) {
-                const workPath = randomExcluding(works, lastWork);
+                const workPath = nextWork || randomExcluding(works, lastWork);
                 lastWork = workPath;
 
                 // Clear previous work media
@@ -91,6 +119,8 @@
 
                 workContainer.appendChild(mediaElement);
             }
+
+            preloadNext();
         }
 
         // Initialize
