@@ -4,7 +4,9 @@
       "Bash(mv:*)",
       "Bash(ls:*)",
       "Bash(find:*)",
-      "Bash(start template.html)"
+      "Bash(start template.html)",
+      "Bash(chmod +x generate-lists.sh)",
+      "Bash(./generate-lists.sh)"
     ],
     "deny": [],
     "ask": []
